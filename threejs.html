@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exfira Gateway Pipeline</title>
+    <style>
+        :root {
+            --bg-page: #0d0d0f;
+            --bg-panel: #161618;
+            --bg-node: #222225;
+            --text-main: #e0e0e0;
+            --text-muted: #808085;
+            --accent-red: #ff453a;
+            --glow-red: rgba(255, 69, 58, 0.4);
+            --ease: cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            background-color: var(--bg-page);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .dashboard {
+            width: 100%;
+            max-width: 800px;
+            background-color: var(--bg-panel);
+            border-radius: 20px;
+            padding: 40px 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+
+        .tracker {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            padding: 0 20px;
+        }
+
+        .node-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            z-index: 2;
+            width: 120px;
+        }
+
+        .node {
+            width: 64px;
+            height: 64px;
+            background-color: var(--bg-node);
+            border-radius: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.5s var(--ease);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            position: relative;
+        }
+
+        .node::after {
+            content: "";
+            position: absolute;
+            inset: -8px;
+            border-radius: 22px;
+            border: 1px solid rgba(255, 69, 58, 0);
+            box-shadow: 0 0 0 rgba(255, 69, 58, 0);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .node svg {
+            width: 28px;
+            height: 28px;
+            fill: var(--text-muted);
+            transition: fill 0.5s var(--ease);
+        }
+
+        .label {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            text-align: center;
+            transition: color 0.5s var(--ease);
+        }
+
+        .node-wrapper.active .node {
+            background-color: rgba(40, 15, 15, 0.8);
+            border-color: var(--accent-red);
+            box-shadow: 0 0 30px var(--glow-red), inset 0 0 10px rgba(255, 69, 58, 0.2);
+            transform: scale(1.05);
+        }
+
+        .node-wrapper.active .node svg {
+            fill: var(--accent-red);
+        }
+
+        .node-wrapper.active .label {
+            color: var(--text-main);
+        }
+
+        .node-wrapper.arrival .node::after {
+            animation: arrivalRing 1.2s var(--ease) forwards;
+        }
+
+        @keyframes arrivalRing {
+            0% {
+                opacity: 0;
+                transform: scale(0.92);
+                border-color: rgba(255, 69, 58, 0);
+                box-shadow: 0 0 0 rgba(255, 69, 58, 0);
+            }
+
+            25% {
+                opacity: 1;
+                transform: scale(1.02);
+                border-color: rgba(255, 69, 58, 0.95);
+                box-shadow: 0 0 18px rgba(255, 69, 58, 0.9);
+            }
+
+            65% {
+                opacity: 0.9;
+                transform: scale(1.16);
+                border-color: rgba(255, 69, 58, 0.45);
+                box-shadow: 0 0 34px rgba(255, 69, 58, 0.65);
+            }
+
+            100% {
+                opacity: 0;
+                transform: scale(1.28);
+                border-color: rgba(255, 69, 58, 0);
+                box-shadow: 0 0 0 rgba(255, 69, 58, 0);
+            }
+        }
+
+        .connector {
+            flex-grow: 1;
+            height: 1px;
+            background-color: rgba(255, 255, 255, 0.1);
+            position: relative;
+            margin: 0 -20px;
+            z-index: 1;
+            top: -15px;
+            overflow: hidden;
+        }
+
+        .data-pulse {
+            position: absolute;
+            top: -1px;
+            left: 0;
+            width: 30px;
+            height: 3px;
+            background: var(--accent-red);
+            box-shadow: 0 0 10px var(--accent-red);
+            border-radius: 5px;
+            opacity: 0;
+        }
+
+        .pulse-forward {
+            animation: moveRight 0.8s var(--ease) forwards;
+            opacity: 1;
+        }
+
+        .pulse-backward {
+            animation: moveLeft 0.8s var(--ease) forwards;
+            opacity: 1;
+        }
+
+        @keyframes moveRight {
+            0% {
+                left: 0;
+                opacity: 0;
+            }
+
+            20% {
+                opacity: 1;
+            }
+
+            80% {
+                opacity: 1;
+            }
+
+            100% {
+                left: calc(100% - 30px);
+                opacity: 0;
+            }
+        }
+
+        @keyframes moveLeft {
+            0% {
+                left: calc(100% - 30px);
+                opacity: 0;
+            }
+
+            20% {
+                opacity: 1;
+            }
+
+            80% {
+                opacity: 1;
+            }
+
+            100% {
+                left: 0;
+                opacity: 0;
+            }
+        }
+
+        .terminal {
+            background-color: #000;
+            border-radius: 12px;
+            padding: 24px;
+            min-height: 80px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+            font-size: 15px;
+            line-height: 1.6;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            transition: opacity 0.3s var(--ease);
+        }
+
+        .terminal.fade-out {
+            opacity: 0;
+        }
+
+        .sensitive {
+            transition: background-color 0.4s var(--ease), color 0.2s ease;
+            border-radius: 3px;
+            padding: 2px 4px;
+        }
+
+        .sensitive.redacted {
+            background-color: #222;
+            color: transparent;
+            box-shadow: 0 0 0 1px #333;
+            user-select: none;
+        }
+
+        .rehydrated {
+            background-color: var(--accent-red);
+            color: #fff;
+            border-radius: 3px;
+            padding: 2px 4px;
+            font-weight: bold;
+            transition: background-color 1s var(--ease) 0.5s, color 0.5s ease 0.5s;
+        }
+
+        .rehydrated.settled {
+            background-color: transparent;
+            color: var(--accent-red);
+        }
+
+        .status-pill {
+            display: block;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            padding: 4px 8px;
+            border-radius: 20px;
+            background-color: rgba(255, 69, 58, 0.15);
+            color: var(--accent-red);
+            margin: 0 auto 10px auto;
+            width: fit-content;
+            letter-spacing: 1px;
+        }
+
+        .terminal-content {
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="dashboard">
+        <div class="tracker">
+
+            <div class="node-wrapper" id="node-client">
+                <div class="node">
+                    <svg viewBox="0 0 24 24">
+                        <path
+                            d="M14 7h4v2h-4V7zm0 4h4v2h-4v-2zm-6.5-4c1.38 0 2.5 1.12 2.5 2.5S8.88 12 7.5 12 5 10.88 5 9.5 6.12 7 7.5 7zm4.5 9c0-.83-2.67-2.5-4.5-2.5S3 15.17 3 16v2h9v-2z" />
+                    </svg>
+                </div>
+                <div class="label">Inbound Query</div>
+            </div>
+
+            <div class="connector">
+                <div class="data-pulse" id="pulse-1"></div>
+            </div>
+
+            <div class="node-wrapper" id="node-proxy">
+                <div class="node">
+                    <svg viewBox="0 0 24 24">
+                        <path
+                            d="M12 3c-1.1 0-2 .9-2 2 0 .74.4 1.38 1 1.73V9h-1l-3.2-3.2c.42-.32.7-.82.7-1.4 0-1.04-.84-1.88-1.88-1.88S3.75 3.36 3.75 4.4c0 1.04.84 1.88 1.88 1.88.35 0 .68-.1.97-.26L9.8 9.22c-.52.47-.84 1.15-.84 1.9 0 1.4 1.15 2.55 2.55 2.55s2.55-1.15 2.55-2.55c0-.75-.32-1.43-.84-1.9l3.2-3.2c.29.16.62.26.97.26 1.04 0 1.88-.84 1.88-1.88S18.42 2.5 17.38 2.5 15.5 3.34 15.5 4.4c0 .58.28 1.08.7 1.4L13 9v-2.27c.6-.35 1-.99 1-1.73 0-1.1-.9-2-2-2zM6.25 4.4c0-.34.28-.63.63-.63s.63.28.63.63-.28.63-.63.63-.63-.28-.63-.63zm11.13 0c0-.34.28-.63.63-.63s.63.28.63.63-.28.63-.63.63-.63-.28-.63-.63zM12 12.4c-.7 0-1.28-.57-1.28-1.27S11.3 9.85 12 9.85s1.27.57 1.27 1.27S12.7 12.4 12 12.4z" />
+                    </svg>
+                </div>
+                <div class="label">Exfira Gateway</div>
+            </div>
+
+            <div class="connector">
+                <div class="data-pulse" id="pulse-2"></div>
+            </div>
+
+            <div class="node-wrapper" id="node-llm">
+                <div class="node">
+                    <svg viewBox="0 0 24 24">
+                        <path
+                            d="M21 11V9h-2V7c0-1.1-.9-2-2-2h-2V3h-2v2h-2V3H9v2H7c-1.1 0-2 .9-2 2v2H3v2h2v2H3v2h2v2c0 1.1.9 2 2 2h2v2h2v-2h2v2h2v-2h2c1.1 0 2-.9 2-2v-2h2v-2h-2v-2h2zm-4 6H7V7h10v10z" />
+                        <path d="M9 9h6v6H9z" />
+                    </svg>
+                </div>
+                <div class="label">Secure Model</div>
+            </div>
+
+        </div>
+
+        <div class="terminal" id="data-terminal">
+            <div class="terminal-content"></div>
+        </div>
+    </div>
+
+    <script>
+        const htmlPrompt = "Analyze transaction for <span class='sensitive'>John Doe</span>, Card ending in <span class='sensitive'>4111</span>.";
+        const aiResponse = "Transaction for [REDACTED_1] using card [REDACTED_2] flagged as standard activity.";
+
+        const nodes = {
+            client: document.getElementById('node-client'),
+            proxy: document.getElementById('node-proxy'),
+            llm: document.getElementById('node-llm')
+        };
+        const pulses = {
+            p1: document.getElementById('pulse-1'),
+            p2: document.getElementById('pulse-2')
+        };
+        const terminal = document.getElementById('data-terminal');
+        const terminalContent = terminal.querySelector('.terminal-content');
+
+        function activateNode(nodeKey) {
+            Object.values(nodes).forEach(n => {
+                n.classList.remove('active');
+                n.classList.remove('arrival');
+            });
+            if (nodeKey) nodes[nodeKey].classList.add('active');
+        }
+
+        function triggerPulse(pulseKey, direction) {
+            pulses.p1.classList.remove('pulse-forward', 'pulse-backward');
+            pulses.p2.classList.remove('pulse-forward', 'pulse-backward');
+            void pulses[pulseKey].offsetWidth;
+            pulses[pulseKey].classList.add('pulse-' + direction);
+        }
+
+        function updateTerminal(statusText, htmlContent, hideInstantly) {
+            if (!hideInstantly) terminal.classList.add('fade-out');
+            setTimeout(() => {
+                terminalContent.innerHTML =
+                    (statusText ? '<span class="status-pill">' + statusText + '</span>' : '') +
+                    '<div>' + htmlContent + '</div>';
+                terminal.classList.remove('fade-out');
+            }, hideInstantly ? 0 : 300);
+        }
+
+        function step1_Input() {
+            activateNode('client');
+            updateTerminal('Query Initiated', htmlPrompt, true);
+            setTimeout(step2_Redact, 2000);
+        }
+
+        function getPill() { return terminal.querySelector('.status-pill'); }
+
+        function step2_Redact() {
+            triggerPulse('p1', 'forward');
+            activateNode(null);
+            setTimeout(() => {
+                activateNode('proxy');
+                updateTerminal('Exfira Processing', htmlPrompt);
+                setTimeout(() => {
+                    terminal.querySelectorAll('.sensitive').forEach(s => s.classList.add('redacted'));
+                    const p = getPill(); if (p) p.innerText = 'PII REDACTED';
+                    setTimeout(step3_LLM, 2000);
+                }, 400);
+            }, 800);
+        }
+
+        function step3_LLM() {
+            triggerPulse('p2', 'forward');
+            activateNode(null);
+            setTimeout(() => {
+                activateNode('llm');
+                updateTerminal('Model Inference', '<span style="color:var(--text-muted)">Generating Response...</span>');
+                setTimeout(() => {
+                    updateTerminal('Model Response', aiResponse);
+                    setTimeout(step4_Rehydrate, 2500);
+                }, 1000);
+            }, 800);
+        }
+
+        function step4_Rehydrate() {
+            triggerPulse('p2', 'backward');
+            activateNode(null);
+            setTimeout(() => {
+                activateNode('proxy');
+                updateTerminal('Exfira Processing', aiResponse);
+                setTimeout(() => {
+                    let restored = aiResponse.replace('[REDACTED_1]', '<span class="rehydrated">John Doe</span>');
+                    restored = restored.replace('[REDACTED_2]', '<span class="rehydrated">4111</span>');
+                    const contentDiv = terminal.querySelector('div');
+                    if (contentDiv) contentDiv.innerHTML = restored;
+                    const p = getPill(); if (p) p.innerText = 'PII REHYDRATED';
+                    setTimeout(() => {
+                        terminal.querySelectorAll('.rehydrated').forEach(s => s.classList.add('settled'));
+                    }, 50);
+                    setTimeout(step5_Output, 600);
+                }, 400);
+            }, 800);
+        }
+
+        function step5_Output() {
+            triggerPulse('p1', 'backward');
+            activateNode(null);
+            const pill = getPill(); if (pill) pill.innerText = 'RETURNING TO USER';
+
+            setTimeout(() => {
+                // 1. Activate node and fire arrival ring first
+                activateNode('client');
+                void nodes.client.offsetWidth;
+                nodes.client.classList.add('arrival');
+
+                // 2. Delay terminal update so ring animation is visible before text swaps
+                setTimeout(() => {
+                    updateTerminal(
+                        'DELIVERED TO USER APPLICATION',
+                        'Transaction for <span class="rehydrated settled">John Doe</span> using card <span class="rehydrated settled">4111</span> flagged as standard activity.'
+                    );
+                }, 350);
+
+            }, 800);
+        }
+
+        window.onload = () => { setTimeout(step1_Input, 500); };
+    </script>
+</body>
+
+</html>

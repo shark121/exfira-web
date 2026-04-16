@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>EXFIRA | Governing AI at Scale</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-surface": "#1b1b1b",
+                        "inverse-surface": "#303030",
+                        "tertiary-container": "#eb0000",
+                        "surface-container-low": "#f3f3f3",
+                        "on-tertiary": "#ffdad4",
+                        "error-container": "#ffdad6",
+                        "on-primary-fixed": "#ffffff",
+                        "on-primary-fixed-variant": "#e2e2e2",
+                        "on-primary-container": "#ffffff",
+                        "tertiary": "#7e0100",
+                        "on-tertiary-fixed-variant": "#ffdad4",
+                        "error": "#ba1a1a",
+                        "surface-dim": "#dadada",
+                        "primary-fixed-dim": "#474747",
+                        "primary": "#000000",
+                        "on-secondary-fixed-variant": "#3b3b3b",
+                        "on-primary": "#e2e2e2",
+                        "surface-variant": "#e2e2e2",
+                        "tertiary-fixed-dim": "#930100",
+                        "surface": "#f9f9f9",
+                        "on-secondary-fixed": "#1b1b1b",
+                        "inverse-on-surface": "#f1f1f1",
+                        "surface-tint": "#5e5e5e",
+                        "on-tertiary-container": "#ffffff",
+                        "on-surface-variant": "#474747",
+                        "on-error-container": "#410002",
+                        "surface-bright": "#f9f9f9",
+                        "secondary": "#5e5e5e",
+                        "surface-container": "#eeeeee",
+                        "outline-variant": "#c6c6c6",
+                        "surface-container-high": "#e8e8e8",
+                        "tertiary-fixed": "#c00100",
+                        "secondary-fixed-dim": "#ababab",
+                        "on-background": "#1b1b1b",
+                        "on-secondary-container": "#1b1b1b",
+                        "secondary-container": "#d4d4d4",
+                        "on-secondary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-highest": "#e2e2e2",
+                        "outline": "#777777",
+                        "background": "#f9f9f9",
+                        "on-tertiary-fixed": "#ffffff",
+                        "inverse-primary": "#c6c6c6",
+                        "secondary-fixed": "#c6c6c6",
+                        "primary-fixed": "#5e5e5e",
+                        "on-error": "#ffffff",
+                        "primary-container": "#3b3b3b"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        body {
+            background-color: #000000;
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        .glass-nav {
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(12px);
+        }
+
+        .tonal-card {
+            background: #0a0a0a;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .tertiary-glow {
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.3);
+        }
+
+        /* --- Pipeline Animation Styles --- */
+        :root {
+            --bg-node: #1a1a1a;
+            --text-main: #e0e0e0;
+            --text-muted: #808085;
+            --accent-red: #ff453a;
+            --glow-red: rgba(255, 69, 58, 0.4);
+            --ease: cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .tracker {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            padding: 0 20px;
+        }
+
+        .node-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            z-index: 2;
+            width: 120px;
+        }
+
+        .pipe-node {
+            width: 64px;
+            height: 64px;
+            background-color: var(--bg-node);
+            border-radius: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.5s var(--ease);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            position: relative;
+        }
+
+        .pipe-node::after {
+            content: "";
+            position: absolute;
+            inset: -8px;
+            border-radius: 22px;
+            border: 1px solid rgba(255, 69, 58, 0);
+            box-shadow: 0 0 0 rgba(255, 69, 58, 0);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .pipe-node svg {
+            width: 28px;
+            height: 28px;
+            fill: var(--text-muted);
+            transition: fill 0.5s var(--ease);
+        }
+
+        .pipe-label {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            text-align: center;
+            transition: color 0.5s var(--ease);
+            font-family: 'Inter', sans-serif;
+        }
+
+        .node-wrapper.active .pipe-node {
+            background-color: rgba(40, 15, 15, 0.8);
+            border-color: var(--accent-red);
+            box-shadow: 0 0 30px var(--glow-red), inset 0 0 10px rgba(255, 69, 58, 0.2);
+            transform: scale(1.05);
+        }
+
+        .node-wrapper.active .pipe-node svg {
+            fill: var(--accent-red);
+        }
+
+        .node-wrapper.active .pipe-label {
+            color: #e0e0e0;
+        }
+
+        .node-wrapper.arrival .pipe-node::after {
+            animation: arrivalRing 1.2s var(--ease) forwards;
+        }
+
+        @keyframes arrivalRing {
+            0% {
+                opacity: 0;
+                transform: scale(0.92);
+                border-color: rgba(255, 69, 58, 0);
+                box-shadow: 0 0 0 rgba(255, 69, 58, 0);
+            }
+
+            25% {
+                opacity: 1;
+                transform: scale(1.02);
+                border-color: rgba(255, 69, 58, 0.95);
+                box-shadow: 0 0 18px rgba(255, 69, 58, 0.9);
+            }
+
+            65% {
+                opacity: 0.9;
+                transform: scale(1.16);
+                border-color: rgba(255, 69, 58, 0.45);
+                box-shadow: 0 0 34px rgba(255, 69, 58, 0.65);
+            }
+
+            100% {
+                opacity: 0;
+                transform: scale(1.28);
+                border-color: rgba(255, 69, 58, 0);
+                box-shadow: 0 0 0 rgba(255, 69, 58, 0);
+            }
+        }
+
+        .connector {
+            flex-grow: 1;
+            height: 1px;
+            background-color: rgba(255, 255, 255, 0.08);
+            position: relative;
+            margin: 0 -20px;
+            z-index: 1;
+            top: -15px;
+            overflow: hidden;
+        }
+
+        .data-pulse {
+            position: absolute;
+            top: -1px;
+            left: 0;
+            width: 30px;
+            height: 3px;
+            background: var(--accent-red);
+            box-shadow: 0 0 10px var(--accent-red);
+            border-radius: 5px;
+            opacity: 0;
+        }
+
+        .pulse-forward {
+            animation: moveRight 0.8s var(--ease) forwards;
+            opacity: 1;
+        }
+
+        .pulse-backward {
+            animation: moveLeft 0.8s var(--ease) forwards;
+            opacity: 1;
+        }
+
+        @keyframes moveRight {
+            0% {
+                left: 0;
+                opacity: 0;
+            }
+
+            20% {
+                opacity: 1;
+            }
+
+            80% {
+                opacity: 1;
+            }
+
+            100% {
+                left: calc(100% - 30px);
+                opacity: 0;
+            }
+        }
+
+        @keyframes moveLeft {
+            0% {
+                left: calc(100% - 30px);
+                opacity: 0;
+            }
+
+            20% {
+                opacity: 1;
+            }
+
+            80% {
+                opacity: 1;
+            }
+
+            100% {
+                left: 0;
+                opacity: 0;
+            }
+        }
+
+        .pipe-terminal {
+            background-color: #000;
+            border-radius: 12px;
+            padding: 20px 24px;
+            min-height: 72px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            transition: opacity 0.3s var(--ease);
+        }
+
+        .pipe-terminal.fade-out {
+            opacity: 0;
+        }
+
+        .sensitive {
+            transition: background-color 0.4s var(--ease), color 0.2s ease;
+            border-radius: 3px;
+            padding: 2px 4px;
+        }
+
+        .sensitive.redacted {
+            background-color: #1a1a1a;
+            color: transparent;
+            box-shadow: 0 0 0 1px #333;
+            user-select: none;
+        }
+
+        .rehydrated {
+            background-color: var(--accent-red);
+            color: #fff;
+            border-radius: 3px;
+            padding: 2px 4px;
+            font-weight: bold;
+            transition: background-color 1s var(--ease) 0.5s, color 0.5s ease 0.5s;
+        }
+
+        .rehydrated.settled {
+            background-color: transparent;
+            color: var(--accent-red);
+        }
+
+        .status-pill {
+            display: block;
+            font-family: 'Inter', sans-serif;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 3px 8px;
+            border-radius: 20px;
+            background-color: rgba(255, 69, 58, 0.15);
+            color: var(--accent-red);
+            margin: 0 auto 10px auto;
+            width: fit-content;
+            letter-spacing: 1.2px;
+        }
+
+        .terminal-content {
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body class="bg-black text-white selection:bg-tertiary selection:text-white">
+
+    <!-- Top Navigation -->
+    <nav class="fixed top-0 w-full z-50 glass-nav">
+        <div class="flex justify-between items-center px-8 py-4 max-w-7xl mx-auto">
+            <div class="text-xl font-extrabold tracking-tighter text-white">EXFIRA</div>
+            <div class="hidden md:flex items-center gap-8">
+                <a class="font-inter body-md tracking-tight text-white font-semibold hover:text-white transition-colors duration-200"
+                    href="#">Platform</a>
+                <a class="font-inter body-md tracking-tight text-neutral-400 hover:text-white transition-colors duration-200"
+                    href="#">Security</a>
+                <a class="font-inter body-md tracking-tight text-neutral-400 hover:text-white transition-colors duration-200"
+                    href="#">Infrastructure</a>
+                <a class="font-inter body-md tracking-tight text-neutral-400 hover:text-white transition-colors duration-200"
+                    href="#">Docs</a>
+            </div>
+            <div class="flex items-center gap-4">
+                <button
+                    class="px-5 py-2 bg-white text-black font-semibold rounded-md text-sm scale-95 active:opacity-80 transition-all">Get
+                    Started</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="pt-32">
+
+        <!-- Hero Section -->
+        <section class="max-w-7xl mx-auto px-8 mb-32">
+            <div class="flex flex-col items-center text-center max-w-4xl mx-auto">
+                <h1 class="text-6xl md:text-8xl font-extrabold tracking-[-0.04em] mb-8 leading-[0.95]">
+                    Governing AI <span class="text-neutral-500">at Scale.</span>
+                </h1>
+                <p class="text-lg md:text-xl text-neutral-400 mb-12 max-w-2xl leading-relaxed">
+                    The intelligence layer for the modern enterprise. Secure, observe, and route every LLM interaction
+                    with millisecond precision.
+                </p>
+                <div class="flex flex-col md:flex-row gap-4 w-full md:w-auto">
+                    <button
+                        class="px-8 py-4 bg-white text-black font-bold rounded-md hover:bg-neutral-200 transition-colors">Deploy
+                        Infrastructure</button>
+                    <button
+                        class="px-8 py-4 bg-transparent border border-neutral-800 text-white font-bold rounded-md hover:bg-white/5 transition-colors">Read
+                        Blueprint</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pipeline Animation Section (replaces Model-Agnostic Architecture) -->
+        <section class="max-w-7xl mx-auto px-8 mb-32">
+            <div class="tonal-card rounded-xl p-12 overflow-hidden relative">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-12 items-center relative z-10">
+
+                    <!-- Left: copy -->
+                    <div class="space-y-6">
+                        <h3 class="text-2xl font-bold tracking-tight">End-to-End PII Gateway</h3>
+                        <p class="text-neutral-400 body-md">Every prompt is intercepted, scrubbed, and rehydrated in
+                            real time — so your models never see sensitive data, and your users always get complete
+                            responses.</p>
+                        <div class="flex flex-col gap-3">
+                            <div class="flex items-center gap-3 p-3 rounded-md bg-white/5 border border-white/10">
+                                <span class="material-symbols-outlined text-sm">verified_user</span>
+                                <span class="text-xs font-bold uppercase tracking-widest">Automatic Redaction</span>
+                            </div>
+                            <div class="flex items-center gap-3 p-3 rounded-md bg-white/5 border border-white/10">
+                                <span class="material-symbols-outlined text-sm">replay</span>
+                                <span class="text-xs font-bold uppercase tracking-widest">Token Rehydration</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: pipeline animation -->
+                    <div class="md:col-span-2">
+                        <div class="relative bg-black rounded-lg border border-neutral-800 p-8 flex flex-col gap-8">
+                            <!-- dot grid background -->
+                            <div class="absolute inset-0 opacity-10 rounded-lg"
+                                style="background-image: radial-gradient(circle at 2px 2px, #444 1px, transparent 0); background-size: 24px 24px;">
+                            </div>
+
+                            <div class="relative z-10 flex flex-col gap-6">
+                                <!-- tracker -->
+                                <div class="tracker">
+                                    <div class="node-wrapper" id="node-client">
+                                        <div class="pipe-node">
+                                            <svg viewBox="0 0 24 24">
+                                                <path
+                                                    d="M14 7h4v2h-4V7zm0 4h4v2h-4v-2zm-6.5-4c1.38 0 2.5 1.12 2.5 2.5S8.88 12 7.5 12 5 10.88 5 9.5 6.12 7 7.5 7zm4.5 9c0-.83-2.67-2.5-4.5-2.5S3 15.17 3 16v2h9v-2z" />
+                                            </svg>
+                                        </div>
+                                        <div class="pipe-label">Inbound Query</div>
+                                    </div>
+                                    <div class="connector">
+                                        <div class="data-pulse" id="pulse-1"></div>
+                                    </div>
+                                    <div class="node-wrapper" id="node-proxy">
+                                        <div class="pipe-node">
+                                            <svg viewBox="0 0 24 24">
+                                                <path
+                                                    d="M12 3c-1.1 0-2 .9-2 2 0 .74.4 1.38 1 1.73V9h-1l-3.2-3.2c.42-.32.7-.82.7-1.4 0-1.04-.84-1.88-1.88-1.88S3.75 3.36 3.75 4.4c0 1.04.84 1.88 1.88 1.88.35 0 .68-.1.97-.26L9.8 9.22c-.52.47-.84 1.15-.84 1.9 0 1.4 1.15 2.55 2.55 2.55s2.55-1.15 2.55-2.55c0-.75-.32-1.43-.84-1.9l3.2-3.2c.29.16.62.26.97.26 1.04 0 1.88-.84 1.88-1.88S18.42 2.5 17.38 2.5 15.5 3.34 15.5 4.4c0 .58.28 1.08.7 1.4L13 9v-2.27c.6-.35 1-.99 1-1.73 0-1.1-.9-2-2-2zM6.25 4.4c0-.34.28-.63.63-.63s.63.28.63.63-.28.63-.63.63-.63-.28-.63-.63zm11.13 0c0-.34.28-.63.63-.63s.63.28.63.63-.28.63-.63.63-.63-.28-.63-.63zM12 12.4c-.7 0-1.28-.57-1.28-1.27S11.3 9.85 12 9.85s1.27.57 1.27 1.27S12.7 12.4 12 12.4z" />
+                                            </svg>
+                                        </div>
+                                        <div class="pipe-label">Exfira Gateway</div>
+                                    </div>
+                                    <div class="connector">
+                                        <div class="data-pulse" id="pulse-2"></div>
+                                    </div>
+                                    <div class="node-wrapper" id="node-llm">
+                                        <div class="pipe-node">
+                                            <svg viewBox="0 0 24 24">
+                                                <path
+                                                    d="M21 11V9h-2V7c0-1.1-.9-2-2-2h-2V3h-2v2h-2V3H9v2H7c-1.1 0-2 .9-2 2v2H3v2h2v2H3v2h2v2c0 1.1.9 2 2 2h2v2h2v-2h2v2h2v-2h2c1.1 0 2-.9 2-2v-2h2v-2h-2v-2h2zm-4 6H7V7h10v10z" />
+                                                <path d="M9 9h6v6H9z" />
+                                            </svg>
+                                        </div>
+                                        <div class="pipe-label">Secure Model</div>
+                                    </div>
+                                </div>
+
+                                <!-- terminal -->
+                                <div class="pipe-terminal" id="data-terminal">
+                                    <div class="terminal-content"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- Analytics Bento Grid -->
+        <section class="max-w-7xl mx-auto px-8 mb-32">
+            <div class="mb-12">
+                <h2 class="text-3xl font-bold tracking-tight mb-2">Observability at Millisecond Scale</h2>
+                <p class="text-neutral-500">Real-time telemetry powered by ClickHouse metadata processing.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+                <!-- Main Chart -->
+                <div class="md:col-span-8 h-[400px] tonal-card rounded-lg p-6 relative">
+                    <div class="flex justify-between items-start mb-8">
+                        <div>
+                            <div class="text-[10px] font-bold uppercase tracking-[0.2em] text-neutral-500 mb-1">Global
+                                Latency (ms)</div>
+                            <div class="text-4xl font-extrabold">24.2 <span
+                                    class="text-sm font-normal text-green-500">-12%</span></div>
+                        </div>
+                        <div class="flex gap-2">
+                            <span class="px-2 py-1 bg-neutral-800 text-[10px] font-bold rounded">LIVE</span>
+                        </div>
+                    </div>
+                    <div class="absolute bottom-6 left-6 right-6 h-48 flex items-end gap-1">
+                        <div class="flex-1 bg-neutral-800 rounded-t-sm h-[40%]"></div>
+                        <div class="flex-1 bg-neutral-800 rounded-t-sm h-[45%]"></div>
+                        <div class="flex-1 bg-neutral-800 rounded-t-sm h-[38%]"></div>
+                        <div class="flex-1 bg-neutral-800 rounded-t-sm h-[60%]"></div>
+                        <div class="flex-1 bg-neutral-800 rounded-t-sm h-[55%]"></div>
+                        <div class="flex-1 bg-white rounded-t-sm h-[75%]"></div>
+                        <div class="flex-1 bg-neutral-800 rounded-t-sm h-[50%]"></div>
+                        <div class="flex-1 bg-neutral-800 rounded-t-sm h-[40%]"></div>
+                        <div class="flex-1 bg-neutral-800 rounded-t-sm h-[65%]"></div>
+                        <div class="flex-1 bg-neutral-800 rounded-t-sm h-[70%]"></div>
+                        <div class="flex-1 bg-neutral-800 rounded-t-sm h-[50%]"></div>
+                        <div class="flex-1 bg-white rounded-t-sm h-[90%]"></div>
+                        <div class="flex-1 bg-neutral-800 rounded-t-sm h-[45%]"></div>
+                        <div class="flex-1 bg-neutral-800 rounded-t-sm h-[30%]"></div>
+                    </div>
+                </div>
+                <!-- Mini Metric 1 -->
+                <div class="md:col-span-4 tonal-card rounded-lg p-6 flex flex-col justify-between">
+                    <div>
+                        <div class="text-[10px] font-bold uppercase tracking-[0.2em] text-neutral-500 mb-1">Total Token
+                            Usage</div>
+                        <div class="text-3xl font-extrabold">1.4B</div>
+                    </div>
+                    <div class="space-y-3 mt-8">
+                        <div class="flex justify-between text-xs text-neutral-400">
+                            <span>Input</span><span class="font-bold">840.2M</span>
+                        </div>
+                        <div class="w-full bg-neutral-900 h-1.5 rounded-full overflow-hidden">
+                            <div class="bg-white h-full w-[60%]"></div>
+                        </div>
+                        <div class="flex justify-between text-xs text-neutral-400">
+                            <span>Output</span><span class="font-bold">559.8M</span>
+                        </div>
+                        <div class="w-full bg-neutral-900 h-1.5 rounded-full overflow-hidden">
+                            <div class="bg-neutral-600 h-full w-[40%]"></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Mini Metric 2 -->
+                <div class="md:col-span-4 tonal-card rounded-lg p-6">
+                    <div class="text-[10px] font-bold uppercase tracking-[0.2em] text-neutral-500 mb-4">Top Cost Centers
+                    </div>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <div class="w-4 h-4 rounded-sm bg-neutral-800"></div>
+                                <span class="text-sm font-bold">Search_RAG</span>
+                            </div>
+                            <span class="text-sm text-neutral-400">$1,240</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <div class="w-4 h-4 rounded-sm bg-neutral-800"></div>
+                                <span class="text-sm font-bold">Customer_Support</span>
+                            </div>
+                            <span class="text-sm text-neutral-400">$890</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <div class="w-4 h-4 rounded-sm bg-neutral-800"></div>
+                                <span class="text-sm font-bold">Dev_Sandbox</span>
+                            </div>
+                            <span class="text-sm text-neutral-400">$450</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Status List -->
+                <div class="md:col-span-8 tonal-card rounded-lg p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <div class="text-[10px] font-bold uppercase tracking-[0.2em] text-neutral-500">Recent Security
+                            Triggers</div>
+                        <span class="material-symbols-outlined text-neutral-500 text-sm">shield</span>
+                    </div>
+                    <div class="space-y-0">
+                        <div
+                            class="group flex items-center justify-between py-3 border-b border-neutral-900 hover:bg-white/5 transition-colors px-2 -mx-2 rounded">
+                            <div class="flex items-center gap-4">
+                                <span class="material-symbols-outlined text-tertiary">warning</span>
+                                <div class="text-sm font-semibold">PII Leak Detected in Prompt</div>
+                            </div>
+                            <div class="text-xs text-neutral-500">2 mins ago</div>
+                        </div>
+                        <div
+                            class="group flex items-center justify-between py-3 border-b border-neutral-900 hover:bg-white/5 transition-colors px-2 -mx-2 rounded">
+                            <div class="flex items-center gap-4">
+                                <span class="material-symbols-outlined text-green-500">check_circle</span>
+                                <div class="text-sm font-semibold">Schema Validation Passed</div>
+                            </div>
+                            <div class="text-xs text-neutral-500">14 mins ago</div>
+                        </div>
+                        <div
+                            class="group flex items-center justify-between py-3 hover:bg-white/5 transition-colors px-2 -mx-2 rounded">
+                            <div class="flex items-center gap-4">
+                                <span class="material-symbols-outlined text-tertiary">priority_high</span>
+                                <div class="text-sm font-semibold">Unusual Volume Spike: 4,000 req/min</div>
+                            </div>
+                            <div class="text-xs text-neutral-500">1 hr ago</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="max-w-7xl mx-auto px-8 mb-32">
+            <div class="rounded-2xl bg-white p-16 text-center text-black flex flex-col items-center">
+                <h2 class="text-4xl md:text-5xl font-extrabold tracking-tight mb-6">Built for scale. Trusted by giants.
+                </h2>
+                <p class="text-lg text-neutral-600 mb-10 max-w-xl">Join the elite engineering teams governing their AI
+                    infrastructure with Exfira.</p>
+                <div class="flex gap-4">
+                    <button class="px-8 py-4 bg-black text-white font-bold rounded-md">Create Free Account</button>
+                    <button
+                        class="px-8 py-4 bg-transparent border border-neutral-300 text-black font-bold rounded-md">Talk
+                        to Solutions Engineering</button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full border-t border-neutral-800 bg-black">
+        <div class="flex flex-col md:flex-row justify-between items-center px-8 py-12 max-w-7xl mx-auto">
+            <div class="flex flex-col items-center md:items-start gap-4 mb-8 md:mb-0">
+                <div class="font-bold text-white text-lg tracking-tighter">EXFIRA</div>
+                <div class="font-inter label-sm uppercase tracking-widest text-neutral-500">© 2024 EXFIRA Inc. All
+                    rights reserved.</div>
+            </div>
+            <div class="flex gap-8">
+                <a class="font-inter label-sm uppercase tracking-widest text-neutral-500 hover:text-red-500 transition-colors"
+                    href="#">Privacy</a>
+                <a class="font-inter label-sm uppercase tracking-widest text-neutral-500 hover:text-red-500 transition-colors"
+                    href="#">Terms</a>
+                <a class="font-inter label-sm uppercase tracking-widest text-neutral-500 hover:text-red-500 transition-colors"
+                    href="#">Status</a>
+                <a class="font-inter label-sm uppercase tracking-widest text-neutral-500 hover:text-red-500 transition-colors"
+                    href="#">Twitter</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        const htmlPrompt = "Analyze transaction for <span class='sensitive'>John Doe</span>, Card ending in <span class='sensitive'>4111</span>.";
+        const aiResponse = "Transaction for [REDACTED_1] using card [REDACTED_2] flagged as standard activity.";
+
+        const nodes = {
+            client: document.getElementById('node-client'),
+            proxy: document.getElementById('node-proxy'),
+            llm: document.getElementById('node-llm')
+        };
+        const pulses = {
+            p1: document.getElementById('pulse-1'),
+            p2: document.getElementById('pulse-2')
+        };
+        const terminal = document.getElementById('data-terminal');
+        const terminalContent = terminal.querySelector('.terminal-content');
+
+        function getPill() { return terminal.querySelector('.status-pill'); }
+
+        function activateNode(nodeKey) {
+            Object.values(nodes).forEach(n => { n.classList.remove('active', 'arrival'); });
+            if (nodeKey) nodes[nodeKey].classList.add('active');
+        }
+
+        function triggerPulse(pulseKey, direction) {
+            pulses.p1.classList.remove('pulse-forward', 'pulse-backward');
+            pulses.p2.classList.remove('pulse-forward', 'pulse-backward');
+            void pulses[pulseKey].offsetWidth;
+            pulses[pulseKey].classList.add('pulse-' + direction);
+        }
+
+        function updateTerminal(statusText, htmlContent, hideInstantly) {
+            if (!hideInstantly) terminal.classList.add('fade-out');
+            setTimeout(() => {
+                terminalContent.innerHTML =
+                    (statusText ? '<span class="status-pill">' + statusText + '</span>' : '') +
+                    '<div>' + htmlContent + '</div>';
+                terminal.classList.remove('fade-out');
+            }, hideInstantly ? 0 : 300);
+        }
+
+        function step1_Input() {
+            activateNode('client');
+            updateTerminal('Query Initiated', htmlPrompt, true);
+            setTimeout(step2_Redact, 2000);
+        }
+
+        function step2_Redact() {
+            triggerPulse('p1', 'forward');
+            activateNode(null);
+            setTimeout(() => {
+                activateNode('proxy');
+                updateTerminal('Exfira Processing', htmlPrompt);
+                setTimeout(() => {
+                    terminal.querySelectorAll('.sensitive').forEach(s => s.classList.add('redacted'));
+                    const p = getPill(); if (p) p.innerText = 'PII REDACTED';
+                    setTimeout(step3_LLM, 2000);
+                }, 400);
+            }, 800);
+        }
+
+        function step3_LLM() {
+            triggerPulse('p2', 'forward');
+            activateNode(null);
+            setTimeout(() => {
+                activateNode('llm');
+                updateTerminal('Model Inference', '<span style="color:var(--text-muted)">Generating Response...</span>');
+                setTimeout(() => {
+                    updateTerminal('Model Response', aiResponse);
+                    setTimeout(step4_Rehydrate, 2500);
+                }, 1000);
+            }, 800);
+        }
+
+        function step4_Rehydrate() {
+            triggerPulse('p2', 'backward');
+            activateNode(null);
+            setTimeout(() => {
+                activateNode('proxy');
+                updateTerminal('Exfira Processing', aiResponse);
+                setTimeout(() => {
+                    let restored = aiResponse.replace('[REDACTED_1]', '<span class="rehydrated">John Doe</span>');
+                    restored = restored.replace('[REDACTED_2]', '<span class="rehydrated">4111</span>');
+                    const contentDiv = terminal.querySelector('div');
+                    if (contentDiv) contentDiv.innerHTML = restored;
+                    const p = getPill(); if (p) p.innerText = 'PII REHYDRATED';
+                    setTimeout(() => {
+                        terminal.querySelectorAll('.rehydrated').forEach(s => s.classList.add('settled'));
+                    }, 50);
+                    setTimeout(step5_Output, 600);
+                }, 400);
+            }, 800);
+        }
+
+        function step5_Output() {
+            triggerPulse('p1', 'backward');
+            activateNode(null);
+            const pill = getPill(); if (pill) pill.innerText = 'RETURNING TO USER';
+
+            setTimeout(() => {
+                activateNode('client');
+                void nodes.client.offsetWidth;
+                nodes.client.classList.add('arrival');
+
+                setTimeout(() => {
+                    updateTerminal(
+                        'DELIVERED TO USER APPLICATION',
+                        'Transaction for <span class="rehydrated settled">John Doe</span> using card <span class="rehydrated settled">4111</span> flagged as standard activity.'
+                    );
+                }, 350);
+
+                setTimeout(step1_Input, 3500);
+            }, 800);
+        }
+
+        window.onload = () => { setTimeout(step1_Input, 500); };
+    </script>
+</body>
+
+</html>
