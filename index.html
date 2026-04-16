@@ -14,65 +14,15 @@
             darkMode: "class",
             theme: {
                 extend: {
-                    "colors": {
-                        "on-surface": "#1b1b1b",
-                        "inverse-surface": "#303030",
-                        "tertiary-container": "#eb0000",
-                        "surface-container-low": "#f3f3f3",
-                        "on-tertiary": "#ffdad4",
-                        "error-container": "#ffdad6",
-                        "on-primary-fixed": "#ffffff",
-                        "on-primary-fixed-variant": "#e2e2e2",
-                        "on-primary-container": "#ffffff",
+                    colors: {
                         "tertiary": "#7e0100",
-                        "on-tertiary-fixed-variant": "#ffdad4",
-                        "error": "#ba1a1a",
-                        "surface-dim": "#dadada",
-                        "primary-fixed-dim": "#474747",
-                        "primary": "#000000",
-                        "on-secondary-fixed-variant": "#3b3b3b",
-                        "on-primary": "#e2e2e2",
-                        "surface-variant": "#e2e2e2",
-                        "tertiary-fixed-dim": "#930100",
-                        "surface": "#f9f9f9",
-                        "on-secondary-fixed": "#1b1b1b",
-                        "inverse-on-surface": "#f1f1f1",
-                        "surface-tint": "#5e5e5e",
-                        "on-tertiary-container": "#ffffff",
-                        "on-surface-variant": "#474747",
-                        "on-error-container": "#410002",
-                        "surface-bright": "#f9f9f9",
-                        "secondary": "#5e5e5e",
-                        "surface-container": "#eeeeee",
-                        "outline-variant": "#c6c6c6",
-                        "surface-container-high": "#e8e8e8",
-                        "tertiary-fixed": "#c00100",
-                        "secondary-fixed-dim": "#ababab",
-                        "on-background": "#1b1b1b",
-                        "on-secondary-container": "#1b1b1b",
-                        "secondary-container": "#d4d4d4",
-                        "on-secondary": "#ffffff",
-                        "surface-container-lowest": "#ffffff",
-                        "surface-container-highest": "#e2e2e2",
-                        "outline": "#777777",
-                        "background": "#f9f9f9",
-                        "on-tertiary-fixed": "#ffffff",
-                        "inverse-primary": "#c6c6c6",
-                        "secondary-fixed": "#c6c6c6",
-                        "primary-fixed": "#5e5e5e",
-                        "on-error": "#ffffff",
-                        "primary-container": "#3b3b3b"
+                        "tertiary-container": "#eb0000",
                     },
-                    "borderRadius": {
-                        "DEFAULT": "0.125rem",
-                        "lg": "0.25rem",
-                        "xl": "0.5rem",
-                        "full": "0.75rem"
+                    borderRadius: {
+                        "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"
                     },
-                    "fontFamily": {
-                        "headline": ["Inter"],
-                        "body": ["Inter"],
-                        "label": ["Inter"]
+                    fontFamily: {
+                        "headline": ["Inter"], "body": ["Inter"], "label": ["Inter"]
                     }
                 },
             },
@@ -80,8 +30,8 @@
     </script>
     <style>
         body {
-            background-color: #000000;
-            color: #ffffff;
+            background-color: #000;
+            color: #fff;
             font-family: 'Inter', sans-serif;
             -webkit-font-smoothing: antialiased;
         }
@@ -91,7 +41,7 @@
         }
 
         .glass-nav {
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.85);
             backdrop-filter: blur(12px);
         }
 
@@ -100,11 +50,7 @@
             border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        .tertiary-glow {
-            box-shadow: 0 0 15px rgba(255, 0, 0, 0.3);
-        }
-
-        /* --- Pipeline Animation Styles --- */
+        /* ── Pipeline Variables ── */
         :root {
             --bg-node: #1a1a1a;
             --text-main: #e0e0e0;
@@ -112,43 +58,79 @@
             --accent-red: #ff453a;
             --glow-red: rgba(255, 69, 58, 0.4);
             --ease: cubic-bezier(0.4, 0, 0.2, 1);
+            --node-size: 48px;
+            --node-radius: 12px;
+            --icon-size: 20px;
         }
 
+        @media (min-width: 400px) {
+            :root {
+                --node-size: 56px;
+                --node-radius: 14px;
+                --icon-size: 24px;
+            }
+        }
+
+        @media (min-width: 560px) {
+            :root {
+                --node-size: 64px;
+                --node-radius: 16px;
+                --icon-size: 28px;
+            }
+        }
+
+        /* ── Tracker ── */
         .tracker {
             display: flex;
             align-items: center;
             justify-content: space-between;
             position: relative;
-            padding: 0 20px;
+            padding: 0 4px;
         }
 
         .node-wrapper {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 12px;
+            gap: 8px;
             z-index: 2;
-            width: 120px;
+            flex-shrink: 0;
+            width: calc(var(--node-size) + 8px);
+        }
+
+        @media (min-width: 560px) {
+            .node-wrapper {
+                width: 110px;
+                gap: 10px;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .node-wrapper {
+                width: 120px;
+                gap: 12px;
+            }
         }
 
         .pipe-node {
-            width: 64px;
-            height: 64px;
+            width: var(--node-size);
+            height: var(--node-size);
             background-color: var(--bg-node);
-            border-radius: 16px;
+            border-radius: var(--node-radius);
             display: flex;
             justify-content: center;
             align-items: center;
             transition: all 0.5s var(--ease);
             border: 1px solid rgba(255, 255, 255, 0.07);
             position: relative;
+            flex-shrink: 0;
         }
 
         .pipe-node::after {
             content: "";
             position: absolute;
-            inset: -8px;
-            border-radius: 22px;
+            inset: -7px;
+            border-radius: calc(var(--node-radius) + 6px);
             border: 1px solid rgba(255, 69, 58, 0);
             box-shadow: 0 0 0 rgba(255, 69, 58, 0);
             opacity: 0;
@@ -156,27 +138,49 @@
         }
 
         .pipe-node svg {
-            width: 28px;
-            height: 28px;
+            width: var(--icon-size);
+            height: var(--icon-size);
             fill: var(--text-muted);
             transition: fill 0.5s var(--ease);
         }
 
         .pipe-label {
-            font-size: 11px;
+            font-size: 8px;
             font-weight: 700;
-            letter-spacing: 1.5px;
+            letter-spacing: 0.8px;
             color: var(--text-muted);
             text-transform: uppercase;
             text-align: center;
             transition: color 0.5s var(--ease);
             font-family: 'Inter', sans-serif;
+            line-height: 1.3;
+        }
+
+        @media (min-width: 400px) {
+            .pipe-label {
+                font-size: 9px;
+                letter-spacing: 1px;
+            }
+        }
+
+        @media (min-width: 560px) {
+            .pipe-label {
+                font-size: 10px;
+                letter-spacing: 1.3px;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .pipe-label {
+                font-size: 11px;
+                letter-spacing: 1.5px;
+            }
         }
 
         .node-wrapper.active .pipe-node {
             background-color: rgba(40, 15, 15, 0.8);
             border-color: var(--accent-red);
-            box-shadow: 0 0 30px var(--glow-red), inset 0 0 10px rgba(255, 69, 58, 0.2);
+            box-shadow: 0 0 24px var(--glow-red), inset 0 0 8px rgba(255, 69, 58, 0.2);
             transform: scale(1.05);
         }
 
@@ -222,27 +226,46 @@
             }
         }
 
+        /* ── Connectors ── */
         .connector {
             flex-grow: 1;
             height: 1px;
             background-color: rgba(255, 255, 255, 0.08);
             position: relative;
-            margin: 0 -20px;
             z-index: 1;
-            top: -15px;
+            margin: 0 -4px;
+            top: calc(var(--node-size) / -2 - 4px);
             overflow: hidden;
+        }
+
+        @media (min-width: 560px) {
+            .connector {
+                margin: 0 -12px;
+            }
         }
 
         .data-pulse {
             position: absolute;
             top: -1px;
             left: 0;
-            width: 30px;
+            width: 20px;
             height: 3px;
             background: var(--accent-red);
-            box-shadow: 0 0 10px var(--accent-red);
+            box-shadow: 0 0 8px var(--accent-red);
             border-radius: 5px;
             opacity: 0;
+        }
+
+        @media (min-width: 560px) {
+            .data-pulse {
+                width: 28px;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .data-pulse {
+                width: 30px;
+            }
         }
 
         .pulse-forward {
@@ -270,14 +293,14 @@
             }
 
             100% {
-                left: calc(100% - 30px);
+                left: calc(100% - 20px);
                 opacity: 0;
             }
         }
 
         @keyframes moveLeft {
             0% {
-                left: calc(100% - 30px);
+                left: calc(100% - 20px);
                 opacity: 0;
             }
 
@@ -295,14 +318,15 @@
             }
         }
 
+        /* ── Terminal ── */
         .pipe-terminal {
             background-color: #000;
-            border-radius: 12px;
-            padding: 20px 24px;
-            min-height: 72px;
+            border-radius: 8px;
+            padding: 12px 14px;
+            min-height: 60px;
             border: 1px solid rgba(255, 255, 255, 0.08);
             font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
-            font-size: 14px;
+            font-size: 10px;
             line-height: 1.6;
             color: var(--text-main);
             display: flex;
@@ -310,6 +334,37 @@
             justify-content: center;
             text-align: center;
             transition: opacity 0.3s var(--ease);
+            word-break: break-word;
+        }
+
+        @media (min-width: 400px) {
+            .pipe-terminal {
+                font-size: 11px;
+            }
+        }
+
+        @media (min-width: 560px) {
+            .pipe-terminal {
+                font-size: 12px;
+                padding: 14px 18px;
+                border-radius: 10px;
+                min-height: 68px;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .pipe-terminal {
+                font-size: 13px;
+                padding: 16px 20px;
+                border-radius: 12px;
+                min-height: 72px;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .pipe-terminal {
+                font-size: 14px;
+            }
         }
 
         .pipe-terminal.fade-out {
@@ -319,7 +374,7 @@
         .sensitive {
             transition: background-color 0.4s var(--ease), color 0.2s ease;
             border-radius: 3px;
-            padding: 2px 4px;
+            padding: 1px 3px;
         }
 
         .sensitive.redacted {
@@ -333,7 +388,7 @@
             background-color: var(--accent-red);
             color: #fff;
             border-radius: 3px;
-            padding: 2px 4px;
+            padding: 1px 4px;
             font-weight: bold;
             transition: background-color 1s var(--ease) 0.5s, color 0.5s ease 0.5s;
         }
@@ -346,82 +401,117 @@
         .status-pill {
             display: block;
             font-family: 'Inter', sans-serif;
-            font-size: 10px;
+            font-size: 8px;
             font-weight: 700;
             text-transform: uppercase;
-            padding: 3px 8px;
+            padding: 2px 6px;
             border-radius: 20px;
             background-color: rgba(255, 69, 58, 0.15);
             color: var(--accent-red);
-            margin: 0 auto 10px auto;
+            margin: 0 auto 7px auto;
             width: fit-content;
-            letter-spacing: 1.2px;
+            letter-spacing: 0.9px;
+        }
+
+        @media (min-width: 400px) {
+            .status-pill {
+                font-size: 9px;
+                letter-spacing: 1px;
+            }
+        }
+
+        @media (min-width: 560px) {
+            .status-pill {
+                font-size: 10px;
+                letter-spacing: 1.2px;
+                padding: 3px 8px;
+            }
         }
 
         .terminal-content {
             width: 100%;
         }
+
+        /* Mobile menu */
+        #mobile-menu {
+            display: none;
+        }
+
+        #mobile-menu.open {
+            display: flex;
+        }
     </style>
 </head>
 
-<body class="bg-black text-white selection:bg-tertiary selection:text-white">
+<body class="bg-black text-white">
 
-    <!-- Top Navigation -->
+    <!-- Nav -->
     <nav class="fixed top-0 w-full z-50 glass-nav">
-        <div class="flex justify-between items-center px-8 py-4 max-w-7xl mx-auto">
-            <div class="text-xl font-extrabold tracking-tighter text-white">EXFIRA</div>
+        <div class="flex justify-between items-center px-5 py-4 max-w-7xl mx-auto md:px-8">
+            <div class="text-xl font-extrabold tracking-tighter">EXFIRA</div>
             <div class="hidden md:flex items-center gap-8">
-                <a class="font-inter body-md tracking-tight text-white font-semibold hover:text-white transition-colors duration-200"
+                <a class="tracking-tight text-white font-semibold hover:text-white transition-colors"
                     href="#">Platform</a>
-                <a class="font-inter body-md tracking-tight text-neutral-400 hover:text-white transition-colors duration-200"
-                    href="#">Security</a>
-                <a class="font-inter body-md tracking-tight text-neutral-400 hover:text-white transition-colors duration-200"
+                <a class="tracking-tight text-neutral-400 hover:text-white transition-colors" href="#">Security</a>
+                <a class="tracking-tight text-neutral-400 hover:text-white transition-colors"
                     href="#">Infrastructure</a>
-                <a class="font-inter body-md tracking-tight text-neutral-400 hover:text-white transition-colors duration-200"
-                    href="#">Docs</a>
+                <a class="tracking-tight text-neutral-400 hover:text-white transition-colors" href="#">Docs</a>
             </div>
-            <div class="flex items-center gap-4">
+            <div class="flex items-center gap-3">
                 <button
-                    class="px-5 py-2 bg-white text-black font-semibold rounded-md text-sm scale-95 active:opacity-80 transition-all">Get
+                    class="px-4 py-2 bg-white text-black font-semibold rounded-md text-sm active:opacity-80 transition-all">Get
                     Started</button>
+                <button id="hamburger" class="md:hidden flex flex-col justify-center gap-1.5 w-8 h-8"
+                    aria-label="Open menu">
+                    <span class="block w-5 h-0.5 bg-white mx-auto"></span>
+                    <span class="block w-5 h-0.5 bg-white mx-auto"></span>
+                    <span class="block w-5 h-0.5 bg-white mx-auto"></span>
+                </button>
             </div>
+        </div>
+        <div id="mobile-menu" class="flex-col gap-4 px-5 pb-5 md:hidden border-t border-neutral-900">
+            <a class="block text-white font-semibold pt-4" href="#">Platform</a>
+            <a class="block text-neutral-400 hover:text-white" href="#">Security</a>
+            <a class="block text-neutral-400 hover:text-white" href="#">Infrastructure</a>
+            <a class="block text-neutral-400 hover:text-white" href="#">Docs</a>
         </div>
     </nav>
 
-    <main class="pt-32">
+    <main class="pt-28 md:pt-32">
 
-        <!-- Hero Section -->
-        <section class="max-w-7xl mx-auto px-8 mb-32">
+        <!-- Hero -->
+        <section class="max-w-7xl mx-auto px-5 md:px-8 mb-20 md:mb-32">
             <div class="flex flex-col items-center text-center max-w-4xl mx-auto">
-                <h1 class="text-6xl md:text-8xl font-extrabold tracking-[-0.04em] mb-8 leading-[0.95]">
+                <h1
+                    class="text-5xl sm:text-6xl md:text-8xl font-extrabold tracking-[-0.04em] mb-6 md:mb-8 leading-[0.95]">
                     Governing AI <span class="text-neutral-500">at Scale.</span>
                 </h1>
-                <p class="text-lg md:text-xl text-neutral-400 mb-12 max-w-2xl leading-relaxed">
+                <p class="text-base md:text-xl text-neutral-400 mb-8 md:mb-12 max-w-2xl leading-relaxed">
                     The intelligence layer for the modern enterprise. Secure, observe, and route every LLM interaction
                     with millisecond precision.
                 </p>
-                <div class="flex flex-col md:flex-row gap-4 w-full md:w-auto">
+                <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
                     <button
-                        class="px-8 py-4 bg-white text-black font-bold rounded-md hover:bg-neutral-200 transition-colors">Deploy
+                        class="px-6 py-3 md:px-8 md:py-4 bg-white text-black font-bold rounded-md hover:bg-neutral-200 transition-colors text-sm md:text-base">Deploy
                         Infrastructure</button>
                     <button
-                        class="px-8 py-4 bg-transparent border border-neutral-800 text-white font-bold rounded-md hover:bg-white/5 transition-colors">Read
+                        class="px-6 py-3 md:px-8 md:py-4 bg-transparent border border-neutral-800 text-white font-bold rounded-md hover:bg-white/5 transition-colors text-sm md:text-base">Read
                         Blueprint</button>
                 </div>
             </div>
         </section>
 
-        <!-- Pipeline Animation Section (replaces Model-Agnostic Architecture) -->
-        <section class="max-w-7xl mx-auto px-8 mb-32">
-            <div class="tonal-card rounded-xl p-12 overflow-hidden relative">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-12 items-center relative z-10">
+        <!-- Pipeline Section -->
+        <section class="max-w-7xl mx-auto px-5 md:px-8 mb-20 md:mb-32">
+            <div class="tonal-card rounded-xl p-5 sm:p-8 md:p-12 overflow-hidden relative">
+                <div class="flex flex-col md:grid md:grid-cols-3 gap-8 md:gap-12 items-center relative z-10">
 
-                    <!-- Left: copy -->
-                    <div class="space-y-6">
-                        <h3 class="text-2xl font-bold tracking-tight">End-to-End PII Gateway</h3>
-                        <p class="text-neutral-400 body-md">Every prompt is intercepted, scrubbed, and rehydrated in
-                            real time — so your models never see sensitive data, and your users always get complete
-                            responses.</p>
+                    <!-- Copy -->
+                    <div class="space-y-5 w-full">
+                        <h3 class="text-xl md:text-2xl font-bold tracking-tight">End-to-End PII Gateway</h3>
+                        <p class="text-neutral-400 text-sm md:text-base leading-relaxed">Every prompt is intercepted,
+                            scrubbed, and rehydrated in real time — so your models never see sensitive data, and your
+                            users always get complete responses.</p>
                         <div class="flex flex-col gap-3">
                             <div class="flex items-center gap-3 p-3 rounded-md bg-white/5 border border-white/10">
                                 <span class="material-symbols-outlined text-sm">verified_user</span>
@@ -434,16 +524,16 @@
                         </div>
                     </div>
 
-                    <!-- Right: pipeline animation -->
-                    <div class="md:col-span-2">
-                        <div class="relative bg-black rounded-lg border border-neutral-800 p-8 flex flex-col gap-8">
-                            <!-- dot grid background -->
-                            <div class="absolute inset-0 opacity-10 rounded-lg"
+                    <!-- Animation -->
+                    <div class="md:col-span-2 w-full min-w-0">
+                        <div
+                            class="relative bg-black rounded-lg border border-neutral-800 p-4 sm:p-6 md:p-8 flex flex-col gap-4 md:gap-6">
+                            <div class="absolute inset-0 opacity-10 rounded-lg pointer-events-none"
                                 style="background-image: radial-gradient(circle at 2px 2px, #444 1px, transparent 0); background-size: 24px 24px;">
                             </div>
+                            <div class="relative z-10 flex flex-col gap-3 md:gap-5 min-w-0">
 
-                            <div class="relative z-10 flex flex-col gap-6">
-                                <!-- tracker -->
+                                <!-- Tracker -->
                                 <div class="tracker">
                                     <div class="node-wrapper" id="node-client">
                                         <div class="pipe-node">
@@ -452,7 +542,7 @@
                                                     d="M14 7h4v2h-4V7zm0 4h4v2h-4v-2zm-6.5-4c1.38 0 2.5 1.12 2.5 2.5S8.88 12 7.5 12 5 10.88 5 9.5 6.12 7 7.5 7zm4.5 9c0-.83-2.67-2.5-4.5-2.5S3 15.17 3 16v2h9v-2z" />
                                             </svg>
                                         </div>
-                                        <div class="pipe-label">Inbound Query</div>
+                                        <div class="pipe-label">Inbound<br>Query</div>
                                     </div>
                                     <div class="connector">
                                         <div class="data-pulse" id="pulse-1"></div>
@@ -464,7 +554,7 @@
                                                     d="M12 3c-1.1 0-2 .9-2 2 0 .74.4 1.38 1 1.73V9h-1l-3.2-3.2c.42-.32.7-.82.7-1.4 0-1.04-.84-1.88-1.88-1.88S3.75 3.36 3.75 4.4c0 1.04.84 1.88 1.88 1.88.35 0 .68-.1.97-.26L9.8 9.22c-.52.47-.84 1.15-.84 1.9 0 1.4 1.15 2.55 2.55 2.55s2.55-1.15 2.55-2.55c0-.75-.32-1.43-.84-1.9l3.2-3.2c.29.16.62.26.97.26 1.04 0 1.88-.84 1.88-1.88S18.42 2.5 17.38 2.5 15.5 3.34 15.5 4.4c0 .58.28 1.08.7 1.4L13 9v-2.27c.6-.35 1-.99 1-1.73 0-1.1-.9-2-2-2zM6.25 4.4c0-.34.28-.63.63-.63s.63.28.63.63-.28.63-.63.63-.63-.28-.63-.63zm11.13 0c0-.34.28-.63.63-.63s.63.28.63.63-.28.63-.63.63-.63-.28-.63-.63zM12 12.4c-.7 0-1.28-.57-1.28-1.27S11.3 9.85 12 9.85s1.27.57 1.27 1.27S12.7 12.4 12 12.4z" />
                                             </svg>
                                         </div>
-                                        <div class="pipe-label">Exfira Gateway</div>
+                                        <div class="pipe-label">Exfira<br>Gateway</div>
                                     </div>
                                     <div class="connector">
                                         <div class="data-pulse" id="pulse-2"></div>
@@ -477,14 +567,15 @@
                                                 <path d="M9 9h6v6H9z" />
                                             </svg>
                                         </div>
-                                        <div class="pipe-label">Secure Model</div>
+                                        <div class="pipe-label">Secure<br>Model</div>
                                     </div>
                                 </div>
 
-                                <!-- terminal -->
+                                <!-- Terminal -->
                                 <div class="pipe-terminal" id="data-terminal">
                                     <div class="terminal-content"></div>
                                 </div>
+
                             </div>
                         </div>
                     </div>
@@ -494,26 +585,25 @@
         </section>
 
         <!-- Analytics Bento Grid -->
-        <section class="max-w-7xl mx-auto px-8 mb-32">
-            <div class="mb-12">
-                <h2 class="text-3xl font-bold tracking-tight mb-2">Observability at Millisecond Scale</h2>
-                <p class="text-neutral-500">Real-time telemetry powered by ClickHouse metadata processing.</p>
+        <section class="max-w-7xl mx-auto px-5 md:px-8 mb-20 md:mb-32">
+            <div class="mb-8 md:mb-12">
+                <h2 class="text-2xl md:text-3xl font-bold tracking-tight mb-2">Observability at Millisecond Scale</h2>
+                <p class="text-neutral-500 text-sm md:text-base">Real-time telemetry powered by ClickHouse metadata
+                    processing.</p>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
-                <!-- Main Chart -->
-                <div class="md:col-span-8 h-[400px] tonal-card rounded-lg p-6 relative">
-                    <div class="flex justify-between items-start mb-8">
+                <div class="md:col-span-8 h-[280px] md:h-[400px] tonal-card rounded-lg p-5 md:p-6 relative">
+                    <div class="flex justify-between items-start mb-6 md:mb-8">
                         <div>
                             <div class="text-[10px] font-bold uppercase tracking-[0.2em] text-neutral-500 mb-1">Global
                                 Latency (ms)</div>
-                            <div class="text-4xl font-extrabold">24.2 <span
+                            <div class="text-3xl md:text-4xl font-extrabold">24.2 <span
                                     class="text-sm font-normal text-green-500">-12%</span></div>
                         </div>
-                        <div class="flex gap-2">
-                            <span class="px-2 py-1 bg-neutral-800 text-[10px] font-bold rounded">LIVE</span>
-                        </div>
+                        <span class="px-2 py-1 bg-neutral-800 text-[10px] font-bold rounded">LIVE</span>
                     </div>
-                    <div class="absolute bottom-6 left-6 right-6 h-48 flex items-end gap-1">
+                    <div
+                        class="absolute bottom-5 left-5 right-5 md:bottom-6 md:left-6 md:right-6 h-28 md:h-48 flex items-end gap-1">
                         <div class="flex-1 bg-neutral-800 rounded-t-sm h-[40%]"></div>
                         <div class="flex-1 bg-neutral-800 rounded-t-sm h-[45%]"></div>
                         <div class="flex-1 bg-neutral-800 rounded-t-sm h-[38%]"></div>
@@ -530,104 +620,98 @@
                         <div class="flex-1 bg-neutral-800 rounded-t-sm h-[30%]"></div>
                     </div>
                 </div>
-                <!-- Mini Metric 1 -->
-                <div class="md:col-span-4 tonal-card rounded-lg p-6 flex flex-col justify-between">
+                <div class="md:col-span-4 tonal-card rounded-lg p-5 md:p-6 flex flex-col justify-between">
                     <div>
                         <div class="text-[10px] font-bold uppercase tracking-[0.2em] text-neutral-500 mb-1">Total Token
                             Usage</div>
                         <div class="text-3xl font-extrabold">1.4B</div>
                     </div>
-                    <div class="space-y-3 mt-8">
-                        <div class="flex justify-between text-xs text-neutral-400">
-                            <span>Input</span><span class="font-bold">840.2M</span>
-                        </div>
+                    <div class="space-y-3 mt-6">
+                        <div class="flex justify-between text-xs text-neutral-400"><span>Input</span><span
+                                class="font-bold">840.2M</span></div>
                         <div class="w-full bg-neutral-900 h-1.5 rounded-full overflow-hidden">
                             <div class="bg-white h-full w-[60%]"></div>
                         </div>
-                        <div class="flex justify-between text-xs text-neutral-400">
-                            <span>Output</span><span class="font-bold">559.8M</span>
-                        </div>
+                        <div class="flex justify-between text-xs text-neutral-400"><span>Output</span><span
+                                class="font-bold">559.8M</span></div>
                         <div class="w-full bg-neutral-900 h-1.5 rounded-full overflow-hidden">
                             <div class="bg-neutral-600 h-full w-[40%]"></div>
                         </div>
                     </div>
                 </div>
-                <!-- Mini Metric 2 -->
-                <div class="md:col-span-4 tonal-card rounded-lg p-6">
+                <div class="md:col-span-4 tonal-card rounded-lg p-5 md:p-6">
                     <div class="text-[10px] font-bold uppercase tracking-[0.2em] text-neutral-500 mb-4">Top Cost Centers
                     </div>
                     <div class="space-y-4">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-2">
-                                <div class="w-4 h-4 rounded-sm bg-neutral-800"></div>
-                                <span class="text-sm font-bold">Search_RAG</span>
-                            </div>
-                            <span class="text-sm text-neutral-400">$1,240</span>
+                                <div class="w-4 h-4 rounded-sm bg-neutral-800 flex-shrink-0"></div><span
+                                    class="text-sm font-bold">Search_RAG</span>
+                            </div><span class="text-sm text-neutral-400">$1,240</span>
                         </div>
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-2">
-                                <div class="w-4 h-4 rounded-sm bg-neutral-800"></div>
-                                <span class="text-sm font-bold">Customer_Support</span>
-                            </div>
-                            <span class="text-sm text-neutral-400">$890</span>
+                                <div class="w-4 h-4 rounded-sm bg-neutral-800 flex-shrink-0"></div><span
+                                    class="text-sm font-bold">Customer_Support</span>
+                            </div><span class="text-sm text-neutral-400">$890</span>
                         </div>
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-2">
-                                <div class="w-4 h-4 rounded-sm bg-neutral-800"></div>
-                                <span class="text-sm font-bold">Dev_Sandbox</span>
-                            </div>
-                            <span class="text-sm text-neutral-400">$450</span>
+                                <div class="w-4 h-4 rounded-sm bg-neutral-800 flex-shrink-0"></div><span
+                                    class="text-sm font-bold">Dev_Sandbox</span>
+                            </div><span class="text-sm text-neutral-400">$450</span>
                         </div>
                     </div>
                 </div>
-                <!-- Status List -->
-                <div class="md:col-span-8 tonal-card rounded-lg p-6">
-                    <div class="flex justify-between items-center mb-6">
+                <div class="md:col-span-8 tonal-card rounded-lg p-5 md:p-6">
+                    <div class="flex justify-between items-center mb-5">
                         <div class="text-[10px] font-bold uppercase tracking-[0.2em] text-neutral-500">Recent Security
                             Triggers</div>
                         <span class="material-symbols-outlined text-neutral-500 text-sm">shield</span>
                     </div>
-                    <div class="space-y-0">
+                    <div>
                         <div
-                            class="group flex items-center justify-between py-3 border-b border-neutral-900 hover:bg-white/5 transition-colors px-2 -mx-2 rounded">
-                            <div class="flex items-center gap-4">
-                                <span class="material-symbols-outlined text-tertiary">warning</span>
-                                <div class="text-sm font-semibold">PII Leak Detected in Prompt</div>
+                            class="flex items-center justify-between py-3 border-b border-neutral-900 px-2 -mx-2 rounded hover:bg-white/5 transition-colors">
+                            <div class="flex items-center gap-3 min-w-0"><span
+                                    class="material-symbols-outlined text-tertiary text-base flex-shrink-0">warning</span>
+                                <div class="text-sm font-semibold truncate">PII Leak Detected in Prompt</div>
                             </div>
-                            <div class="text-xs text-neutral-500">2 mins ago</div>
+                            <div class="text-xs text-neutral-500 flex-shrink-0 ml-4">2 mins ago</div>
                         </div>
                         <div
-                            class="group flex items-center justify-between py-3 border-b border-neutral-900 hover:bg-white/5 transition-colors px-2 -mx-2 rounded">
-                            <div class="flex items-center gap-4">
-                                <span class="material-symbols-outlined text-green-500">check_circle</span>
-                                <div class="text-sm font-semibold">Schema Validation Passed</div>
+                            class="flex items-center justify-between py-3 border-b border-neutral-900 px-2 -mx-2 rounded hover:bg-white/5 transition-colors">
+                            <div class="flex items-center gap-3 min-w-0"><span
+                                    class="material-symbols-outlined text-green-500 text-base flex-shrink-0">check_circle</span>
+                                <div class="text-sm font-semibold truncate">Schema Validation Passed</div>
                             </div>
-                            <div class="text-xs text-neutral-500">14 mins ago</div>
+                            <div class="text-xs text-neutral-500 flex-shrink-0 ml-4">14 mins ago</div>
                         </div>
                         <div
-                            class="group flex items-center justify-between py-3 hover:bg-white/5 transition-colors px-2 -mx-2 rounded">
-                            <div class="flex items-center gap-4">
-                                <span class="material-symbols-outlined text-tertiary">priority_high</span>
-                                <div class="text-sm font-semibold">Unusual Volume Spike: 4,000 req/min</div>
+                            class="flex items-center justify-between py-3 px-2 -mx-2 rounded hover:bg-white/5 transition-colors">
+                            <div class="flex items-center gap-3 min-w-0"><span
+                                    class="material-symbols-outlined text-tertiary text-base flex-shrink-0">priority_high</span>
+                                <div class="text-sm font-semibold truncate">Unusual Volume Spike: 4,000 req/min</div>
                             </div>
-                            <div class="text-xs text-neutral-500">1 hr ago</div>
+                            <div class="text-xs text-neutral-500 flex-shrink-0 ml-4">1 hr ago</div>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- CTA Section -->
-        <section class="max-w-7xl mx-auto px-8 mb-32">
-            <div class="rounded-2xl bg-white p-16 text-center text-black flex flex-col items-center">
-                <h2 class="text-4xl md:text-5xl font-extrabold tracking-tight mb-6">Built for scale. Trusted by giants.
-                </h2>
-                <p class="text-lg text-neutral-600 mb-10 max-w-xl">Join the elite engineering teams governing their AI
-                    infrastructure with Exfira.</p>
-                <div class="flex gap-4">
-                    <button class="px-8 py-4 bg-black text-white font-bold rounded-md">Create Free Account</button>
+        <!-- CTA -->
+        <section class="max-w-7xl mx-auto px-5 md:px-8 mb-20 md:mb-32">
+            <div class="rounded-2xl bg-white p-8 sm:p-12 md:p-16 text-center text-black flex flex-col items-center">
+                <h2 class="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight mb-4 md:mb-6">Built for scale.
+                    Trusted by giants.</h2>
+                <p class="text-base text-neutral-600 mb-8 md:mb-10 max-w-xl">Join the elite engineering teams governing
+                    their AI infrastructure with Exfira.</p>
+                <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
                     <button
-                        class="px-8 py-4 bg-transparent border border-neutral-300 text-black font-bold rounded-md">Talk
+                        class="px-6 py-3 md:px-8 md:py-4 bg-black text-white font-bold rounded-md text-sm md:text-base">Create
+                        Free Account</button>
+                    <button
+                        class="px-6 py-3 md:px-8 md:py-4 bg-transparent border border-neutral-300 text-black font-bold rounded-md text-sm md:text-base">Talk
                         to Solutions Engineering</button>
                 </div>
             </div>
@@ -637,26 +721,31 @@
 
     <!-- Footer -->
     <footer class="w-full border-t border-neutral-800 bg-black">
-        <div class="flex flex-col md:flex-row justify-between items-center px-8 py-12 max-w-7xl mx-auto">
-            <div class="flex flex-col items-center md:items-start gap-4 mb-8 md:mb-0">
-                <div class="font-bold text-white text-lg tracking-tighter">EXFIRA</div>
-                <div class="font-inter label-sm uppercase tracking-widest text-neutral-500">© 2024 EXFIRA Inc. All
-                    rights reserved.</div>
+        <div
+            class="flex flex-col md:flex-row justify-between items-center px-5 md:px-8 py-10 md:py-12 max-w-7xl mx-auto gap-6 md:gap-0">
+            <div class="flex flex-col items-center md:items-start gap-2">
+                <div class="font-bold text-lg tracking-tighter">EXFIRA</div>
+                <div class="text-xs uppercase tracking-widest text-neutral-500">© 2024 EXFIRA Inc. All rights reserved.
+                </div>
             </div>
-            <div class="flex gap-8">
-                <a class="font-inter label-sm uppercase tracking-widest text-neutral-500 hover:text-red-500 transition-colors"
+            <div class="flex gap-6 flex-wrap justify-center">
+                <a class="text-xs uppercase tracking-widest text-neutral-500 hover:text-red-500 transition-colors"
                     href="#">Privacy</a>
-                <a class="font-inter label-sm uppercase tracking-widest text-neutral-500 hover:text-red-500 transition-colors"
+                <a class="text-xs uppercase tracking-widest text-neutral-500 hover:text-red-500 transition-colors"
                     href="#">Terms</a>
-                <a class="font-inter label-sm uppercase tracking-widest text-neutral-500 hover:text-red-500 transition-colors"
+                <a class="text-xs uppercase tracking-widest text-neutral-500 hover:text-red-500 transition-colors"
                     href="#">Status</a>
-                <a class="font-inter label-sm uppercase tracking-widest text-neutral-500 hover:text-red-500 transition-colors"
+                <a class="text-xs uppercase tracking-widest text-neutral-500 hover:text-red-500 transition-colors"
                     href="#">Twitter</a>
             </div>
         </div>
     </footer>
 
     <script>
+        document.getElementById('hamburger').addEventListener('click', () => {
+            document.getElementById('mobile-menu').classList.toggle('open');
+        });
+
         const htmlPrompt = "Analyze transaction for <span class='sensitive'>John Doe</span>, Card ending in <span class='sensitive'>4111</span>.";
         const aiResponse = "Transaction for [REDACTED_1] using card [REDACTED_2] flagged as standard activity.";
 
