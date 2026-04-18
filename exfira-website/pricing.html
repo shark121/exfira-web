@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>EXFIRA | Pricing</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "tertiary": "#7e0100",
+                        "tertiary-container": "#eb0000",
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"
+                    },
+                    fontFamily: {
+                        "headline": ["Inter"], "body": ["Inter"], "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        body {
+            background-color: #000;
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-nav {
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(12px);
+        }
+        .tonal-card {
+            background: #0a0a0a;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        #mobile-menu { display: none; }
+        #mobile-menu.open { display: flex; }
+
+        .plan-card {
+            background: #0a0a0a;
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            border-radius: 0.5rem;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            transition: border-color 0.2s;
+        }
+        .plan-card:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+        .plan-card.featured {
+            background: #fff;
+            border-color: #fff;
+            color: #000;
+        }
+        .plan-card.featured .plan-price,
+        .plan-card.featured .plan-name,
+        .plan-card.featured .plan-desc,
+        .plan-card.featured .feature-item {
+            color: #000;
+        }
+        .plan-card.featured .feature-icon {
+            color: #000;
+        }
+        .plan-card.featured .plan-divider {
+            border-color: rgba(0,0,0,0.1);
+        }
+        .plan-card.featured .plan-label {
+            background: #000;
+            color: #fff;
+        }
+
+        .toggle-pill {
+            display: flex;
+            background: #0a0a0a;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 0.5rem;
+            padding: 3px;
+        }
+        .toggle-btn {
+            padding: 6px 20px;
+            border-radius: 0.35rem;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s, color 0.15s;
+            color: #737373;
+            background: transparent;
+            border: none;
+            outline: none;
+        }
+        .toggle-btn.active {
+            background: #fff;
+            color: #000;
+        }
+    </style>
+</head>
+
+<body class="bg-black text-white">
+
+    <!-- Nav -->
+    <nav class="fixed top-0 w-full z-50 glass-nav">
+        <div class="flex justify-between items-center px-5 py-4 max-w-7xl mx-auto md:px-8">
+            <a href="index.html" class="text-xl font-extrabold tracking-tighter">EXFIRA</a>
+            <div class="hidden md:flex items-center gap-8">
+                <a class="tracking-tight text-neutral-400 hover:text-white transition-colors" href="index.html">Platform</a>
+                <a class="tracking-tight text-white font-semibold hover:text-white transition-colors" href="pricing.html">Pricing</a>
+            </div>
+            <div class="flex items-center gap-3">
+                <a href="signup.html" class="px-4 py-2 bg-white text-black font-semibold rounded-md text-sm active:opacity-80 transition-all">Get Started</a>
+                <button id="hamburger" class="md:hidden flex flex-col justify-center gap-1.5 w-8 h-8" aria-label="Open menu">
+                    <span class="block w-5 h-0.5 bg-white mx-auto"></span>
+                    <span class="block w-5 h-0.5 bg-white mx-auto"></span>
+                    <span class="block w-5 h-0.5 bg-white mx-auto"></span>
+                </button>
+            </div>
+        </div>
+        <div id="mobile-menu" class="flex-col gap-4 px-5 pb-5 md:hidden border-t border-neutral-900">
+            <a class="block text-neutral-400 hover:text-white pt-4" href="index.html">Platform</a>
+            <a class="block text-white font-semibold" href="pricing.html">Pricing</a>
+        </div>
+    </nav>
+
+    <main class="pt-28 md:pt-32">
+
+        <!-- Hero -->
+        <section class="max-w-7xl mx-auto px-5 md:px-8 mb-14 md:mb-20 text-center">
+            <div class="text-[10px] font-bold uppercase tracking-[0.2em] text-neutral-500 mb-4">Pricing</div>
+            <h1 class="text-5xl sm:text-6xl md:text-7xl font-extrabold tracking-[-0.04em] mb-5 leading-[0.95]">
+                Simple. <span class="text-neutral-500">No surprises.</span>
+            </h1>
+            <p class="text-base md:text-lg text-neutral-400 max-w-xl mx-auto mb-8 leading-relaxed">
+                Start free. Scale as you grow. Enterprise contracts available for regulated industries.
+            </p>
+            <!-- Billing toggle -->
+            <div class="flex justify-center">
+                <div class="toggle-pill">
+                    <button class="toggle-btn active" id="btn-monthly" onclick="setBilling('monthly')">Monthly</button>
+                    <button class="toggle-btn" id="btn-annual" onclick="setBilling('annual')">Annual <span class="text-green-500 font-bold">–20%</span></button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Plans -->
+        <section class="max-w-7xl mx-auto px-5 md:px-8 mb-20 md:mb-32">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+
+                <!-- Starter -->
+                <div class="plan-card">
+                    <div>
+                        <div class="text-[10px] font-bold uppercase tracking-[0.2em] text-neutral-500 mb-3 plan-label w-fit px-2 py-0.5 rounded bg-neutral-900">Starter</div>
+                        <div class="plan-name text-white text-lg font-bold mb-1">For builders & early teams</div>
+                        <div class="plan-desc text-neutral-400 text-sm leading-relaxed">Everything you need to test and integrate Exfira before you scale.</div>
+                    </div>
+
+                    <div>
+                        <div class="plan-price text-white">
+                            <span class="text-4xl font-extrabold tracking-tight" data-monthly="$0" data-annual="$0">$0</span>
+                            <span class="text-neutral-500 text-sm">/month</span>
+                        </div>
+                        <div class="text-xs text-neutral-500 mt-1">Up to 500K tokens/month included</div>
+                    </div>
+
+                    <hr class="plan-divider border-neutral-800" />
+
+                    <ul class="space-y-3 flex-1">
+                        <li class="feature-item flex items-center gap-3 text-sm text-neutral-300">
+                            <span class="material-symbols-outlined feature-icon text-neutral-400 text-base flex-shrink-0">check</span>
+                            500K tokens / month
+                        </li>
+                        <li class="feature-item flex items-center gap-3 text-sm text-neutral-300">
+                            <span class="material-symbols-outlined feature-icon text-neutral-400 text-base flex-shrink-0">check</span>
+                            PII redaction (20 entity types)
+                        </li>
+                        <li class="feature-item flex items-center gap-3 text-sm text-neutral-300">
+                            <span class="material-symbols-outlined feature-icon text-neutral-400 text-base flex-shrink-0">check</span>
+                            1 workspace
+                        </li>
+                        <li class="feature-item flex items-center gap-3 text-sm text-neutral-300">
+                            <span class="material-symbols-outlined feature-icon text-neutral-400 text-base flex-shrink-0">check</span>
+                            7-day audit log retention
+                        </li>
+                        <li class="feature-item flex items-center gap-3 text-sm text-neutral-300">
+                            <span class="material-symbols-outlined feature-icon text-neutral-400 text-base flex-shrink-0">check</span>
+                            Community support
+                        </li>
+                        <li class="feature-item flex items-center gap-3 text-sm text-neutral-500">
+                            <span class="material-symbols-outlined feature-icon text-neutral-700 text-base flex-shrink-0">close</span>
+                            Custom policies
+                        </li>
+                        <li class="feature-item flex items-center gap-3 text-sm text-neutral-500">
+                            <span class="material-symbols-outlined feature-icon text-neutral-700 text-base flex-shrink-0">close</span>
+                            SLA guarantee
+                        </li>
+                    </ul>
+
+                    <a href="signup.html" class="w-full py-3 border border-neutral-700 text-white font-bold rounded-md text-sm hover:bg-white/5 transition-colors text-center block">
+                        Start Free
+                    </a>
+                </div>
+
+                <!-- Pro — featured -->
+                <div class="plan-card featured relative">
+                    <div class="absolute -top-3 left-1/2 -translate-x-1/2">
+                        <span class="bg-black text-white text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full border border-neutral-700">Most Popular</span>
+                    </div>
+
+                    <div>
+                        <div class="text-[10px] font-bold uppercase tracking-[0.2em] text-neutral-600 mb-3 plan-label w-fit px-2 py-0.5 rounded bg-neutral-200">Pro</div>
+                        <div class="plan-name text-black text-lg font-bold mb-1">For growing engineering teams</div>
+                        <div class="plan-desc text-neutral-600 text-sm leading-relaxed">Full PII coverage, multi-workspace, and the observability your team needs.</div>
+                    </div>
+
+                    <div>
+                        <div class="plan-price text-black">
+                            <span class="text-4xl font-extrabold tracking-tight" data-monthly="$299" data-annual="$239">$299</span>
+                            <span class="text-neutral-500 text-sm">/month</span>
+                        </div>
+                        <div class="text-xs text-neutral-500 mt-1">Up to 50M tokens/month included</div>
+                    </div>
+
+                    <hr class="plan-divider border-neutral-200" />
+
+                    <ul class="space-y-3 flex-1">
+                        <li class="feature-item flex items-center gap-3 text-sm text-neutral-800">
+                            <span class="material-symbols-outlined feature-icon text-black text-base flex-shrink-0">check</span>
+                            50M tokens / month
+                        </li>
+                        <li class="feature-item flex items-center gap-3 text-sm text-neutral-800">
+                            <span class="material-symbols-outlined feature-icon text-black text-base flex-shrink-0">check</span>
+                            Full PII redaction (40+ entity types)
+                        </li>
+                        <li class="feature-item flex items-center gap-3 text-sm text-neutral-800">
+                            <span class="material-symbols-outlined feature-icon text-black text-base flex-shrink-0">check</span>
+                            Up to 10 workspaces
+                        </li>
+                        <li class="feature-item flex items-center gap-3 text-sm text-neutral-800">
+                            <span class="material-symbols-outlined feature-icon text-black text-base flex-shrink-0">check</span>
+                            90-day audit log retention
+                        </li>
+                        <li class="feature-item flex items-center gap-3 text-sm text-neutral-800">
+                            <span class="material-symbols-outlined feature-icon text-black text-base flex-shrink-0">check</span>
+                            Custom routing policies
+                        </li>
+                        <li class="feature-item flex items-center gap-3 text-sm text-neutral-800">
+                            <span class="material-symbols-outlined feature-icon text-black text-base flex-shrink-0">check</span>
+                            Email & Slack support
+                        </li>
+                        <li class="feature-item flex items-center gap-3 text-sm text-neutral-500">
+                            <span class="material-symbols-outlined feature-icon text-neutral-400 text-base flex-shrink-0">close</span>
+                            Private VPC deployment
+                        </li>
+                    </ul>
+
+                    <a href="signup.html" class="w-full py-3 bg-black text-white font-bold rounded-md text-sm hover:bg-neutral-800 transition-colors text-center block">
+                        Start 14-Day Trial
+                    </a>
+                </div>
+
+                <!-- Enterprise -->
+                <div class="plan-card">
+                    <div>
+                        <div class="text-[10px] font-bold uppercase tracking-[0.2em] text-neutral-500 mb-3 plan-label w-fit px-2 py-0.5 rounded bg-neutral-900">Enterprise</div>
+                        <div class="plan-name text-white text-lg font-bold mb-1">For regulated industries & scale</div>
+                        <div class="plan-desc text-neutral-400 text-sm leading-relaxed">Private deployment, compliance controls, and a dedicated SLA for mission-critical workloads.</div>
+                    </div>
+
+                    <div>
+                        <div class="plan-price text-white">
+                            <span class="text-4xl font-extrabold tracking-tight">Custom</span>
+                        </div>
+                        <div class="text-xs text-neutral-500 mt-1">Unlimited tokens · Annual contract</div>
+                    </div>
+
+                    <hr class="plan-divider border-neutral-800" />
+
+                    <ul class="space-y-3 flex-1">
+                        <li class="feature-item flex items-center gap-3 text-sm text-neutral-300">
+                            <span class="material-symbols-outlined feature-icon text-neutral-400 text-base flex-shrink-0">check</span>
+                            Unlimited tokens
+                        </li>
+                        <li class="feature-item flex items-center gap-3 text-sm text-neutral-300">
+                            <span class="material-symbols-outlined feature-icon text-neutral-400 text-base flex-shrink-0">check</span>
+                            Unlimited workspaces
+                        </li>
+                        <li class="feature-item flex items-center gap-3 text-sm text-neutral-300">
+                            <span class="material-symbols-outlined feature-icon text-neutral-400 text-base flex-shrink-0">check</span>
+                            Private VPC or on-premises
+                        </li>
+                        <li class="feature-item flex items-center gap-3 text-sm text-neutral-300">
+                            <span class="material-symbols-outlined feature-icon text-neutral-400 text-base flex-shrink-0">check</span>
+                            Customer-managed encryption keys
+                        </li>
+                        <li class="feature-item flex items-center gap-3 text-sm text-neutral-300">
+                            <span class="material-symbols-outlined feature-icon text-neutral-400 text-base flex-shrink-0">check</span>
+                            99.99% uptime SLA
+                        </li>
+                        <li class="feature-item flex items-center gap-3 text-sm text-neutral-300">
+                            <span class="material-symbols-outlined feature-icon text-neutral-400 text-base flex-shrink-0">check</span>
+                            HIPAA / SOC 2 / ISO 27001
+                        </li>
+                        <li class="feature-item flex items-center gap-3 text-sm text-neutral-300">
+                            <span class="material-symbols-outlined feature-icon text-neutral-400 text-base flex-shrink-0">check</span>
+                            Dedicated solutions engineer
+                        </li>
+                    </ul>
+
+                    <a href="mailto:sales@exfira.io" class="w-full py-3 border border-neutral-700 text-white font-bold rounded-md text-sm hover:bg-white/5 transition-colors text-center block">
+                        Talk to Sales
+                    </a>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Usage pricing note -->
+        <section class="max-w-7xl mx-auto px-5 md:px-8 mb-20 md:mb-32">
+            <div class="tonal-card rounded-xl p-6 md:p-8 flex flex-col md:flex-row md:items-center gap-4 md:gap-10">
+                <div class="flex-1">
+                    <div class="text-[10px] font-bold uppercase tracking-[0.2em] text-neutral-500 mb-2">Overage Pricing</div>
+                    <h3 class="font-bold text-lg mb-1">Pay only for what you use</h3>
+                    <p class="text-neutral-400 text-sm leading-relaxed">Exceed your monthly token allowance? We charge a flat overage rate — no surprise invoices, no service interruption.</p>
+                </div>
+                <div class="flex gap-6 flex-shrink-0">
+                    <div class="text-center">
+                        <div class="text-2xl font-extrabold">$0.20</div>
+                        <div class="text-[10px] uppercase tracking-widest text-neutral-500 mt-1">per 1M tokens<br>Starter</div>
+                    </div>
+                    <div class="w-px bg-neutral-800"></div>
+                    <div class="text-center">
+                        <div class="text-2xl font-extrabold">$0.12</div>
+                        <div class="text-[10px] uppercase tracking-widest text-neutral-500 mt-1">per 1M tokens<br>Pro</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FAQ -->
+        <section class="max-w-3xl mx-auto px-5 md:px-8 mb-20 md:mb-32">
+            <h2 class="text-2xl font-bold tracking-tight mb-8 text-center">Common Questions</h2>
+            <div class="space-y-0 divide-y divide-neutral-900">
+                <details class="group py-5 cursor-pointer">
+                    <summary class="flex items-center justify-between font-semibold text-sm list-none">
+                        Do you store my prompts or responses?
+                        <span class="material-symbols-outlined text-neutral-500 group-open:rotate-180 transition-transform text-base flex-shrink-0 ml-4">expand_more</span>
+                    </summary>
+                    <p class="text-neutral-400 text-sm leading-relaxed mt-3">No. By default, Exfira processes requests in-memory and does not persist prompt or response content. Only metadata (timestamps, token counts, latency) is stored for observability. You can opt into content logging for your own audit purposes.</p>
+                </details>
+                <details class="group py-5 cursor-pointer">
+                    <summary class="flex items-center justify-between font-semibold text-sm list-none">
+                        Can I change plans at any time?
+                        <span class="material-symbols-outlined text-neutral-500 group-open:rotate-180 transition-transform text-base flex-shrink-0 ml-4">expand_more</span>
+                    </summary>
+                    <p class="text-neutral-400 text-sm leading-relaxed mt-3">Yes. You can upgrade or downgrade at any time. Upgrades take effect immediately; downgrades apply at the start of the next billing cycle.</p>
+                </details>
+                <details class="group py-5 cursor-pointer">
+                    <summary class="flex items-center justify-between font-semibold text-sm list-none">
+                        What LLM providers does Exfira support?
+                        <span class="material-symbols-outlined text-neutral-500 group-open:rotate-180 transition-transform text-base flex-shrink-0 ml-4">expand_more</span>
+                    </summary>
+                    <p class="text-neutral-400 text-sm leading-relaxed mt-3">Exfira supports any OpenAI-compatible API endpoint out of the box — including OpenAI, Anthropic, Google Gemini, Mistral, and self-hosted models via LiteLLM or similar proxies.</p>
+                </details>
+                <details class="group py-5 cursor-pointer">
+                    <summary class="flex items-center justify-between font-semibold text-sm list-none">
+                        Is there a free trial for Pro?
+                        <span class="material-symbols-outlined text-neutral-500 group-open:rotate-180 transition-transform text-base flex-shrink-0 ml-4">expand_more</span>
+                    </summary>
+                    <p class="text-neutral-400 text-sm leading-relaxed mt-3">Yes. Pro comes with a 14-day free trial — no credit card required. After the trial you can subscribe or drop back to the free Starter plan.</p>
+                </details>
+            </div>
+        </section>
+
+        <!-- CTA -->
+        <section class="max-w-7xl mx-auto px-5 md:px-8 mb-20 md:mb-32">
+            <div class="rounded-2xl bg-white p-8 sm:p-12 md:p-16 text-center text-black flex flex-col items-center">
+                <h2 class="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight mb-4 md:mb-6">Start governing your AI today.</h2>
+                <p class="text-base text-neutral-600 mb-8 md:mb-10 max-w-xl">Free to start. No card required. Upgrade when you're ready.</p>
+                <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                    <a href="signup.html" class="px-6 py-3 md:px-8 md:py-4 bg-black text-white font-bold rounded-md text-sm md:text-base text-center">Create Free Account</a>
+                    <a href="mailto:sales@exfira.io" class="px-6 py-3 md:px-8 md:py-4 bg-transparent border border-neutral-300 text-black font-bold rounded-md text-sm md:text-base text-center">Talk to Sales</a>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full border-t border-neutral-800 bg-black">
+        <div class="flex flex-col md:flex-row justify-between items-center px-5 md:px-8 py-10 md:py-12 max-w-7xl mx-auto gap-6 md:gap-0">
+            <div class="flex flex-col items-center md:items-start gap-2">
+                <div class="font-bold text-lg tracking-tighter">EXFIRA</div>
+                <div class="text-xs uppercase tracking-widest text-neutral-500">© 2024 EXFIRA Inc. All rights reserved.</div>
+            </div>
+            <div class="flex gap-6 flex-wrap justify-center">
+                <a class="text-xs uppercase tracking-widest text-neutral-500 hover:text-red-500 transition-colors" href="privacy.html">Privacy</a>
+                <a class="text-xs uppercase tracking-widest text-neutral-500 hover:text-red-500 transition-colors" href="terms.html">Terms</a>
+                <a class="text-xs uppercase tracking-widest text-neutral-500 hover:text-red-500 transition-colors" href="status.html">Status</a>
+                <a class="text-xs uppercase tracking-widest text-neutral-500 hover:text-red-500 transition-colors" href="#">Twitter</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById('hamburger').addEventListener('click', () => {
+            document.getElementById('mobile-menu').classList.toggle('open');
+        });
+
+        function setBilling(mode) {
+            document.getElementById('btn-monthly').classList.toggle('active', mode === 'monthly');
+            document.getElementById('btn-annual').classList.toggle('active', mode === 'annual');
+            document.querySelectorAll('[data-monthly]').forEach(el => {
+                el.textContent = mode === 'monthly' ? el.dataset.monthly : el.dataset.annual;
+            });
+        }
+    </script>
+</body>
+</html>
