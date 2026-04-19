@@ -6,14 +6,39 @@ vault structure:
   e.g. { "<PERSON>": ("John Doe", "PERSON") }
 """
 
-from presidio_analyzer import AnalyzerEngine
+from presidio_analyzer import AnalyzerEngine, PatternRecognizer, Pattern
 from presidio_anonymizer import AnonymizerEngine
 from presidio_anonymizer.entities import OperatorConfig
+
+_DOB_RECOGNIZER = PatternRecognizer(
+    supported_entity="DATE_OF_BIRTH",
+    patterns=[
+        # Explicit label followed by a date: "DOB: 01/01/1990", "date of birth: Jan 1, 1990"
+        Pattern(
+            "labeled_dob",
+            r"(?i)\b(?:dob|date\s+of\s+birth|birth\s+date|born\s+on|born)\s*:?\s*"
+            r"(?:\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4}"
+            r"|\d{4}[\/\-\.]\d{1,2}[\/\-\.]\d{1,2}"
+            r"|(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?"
+            r"|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)"
+            r"\s+\d{1,2},?\s+\d{4})",
+            0.9,
+        ),
+        # Standalone date with context words nearby (context boost applied by Presidio)
+        Pattern(
+            "date_with_context",
+            r"\b(?:\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4}|\d{4}[\/\-\.]\d{1,2}[\/\-\.]\d{1,2})\b",
+            0.4,
+        ),
+    ],
+    context=["born", "dob", "date of birth", "birth date", "birthday", "date of birth is", "born on"],
+)
 
 
 class Redactor:
     def __init__(self):
         self._analyzer = AnalyzerEngine()
+        self._analyzer.registry.add_recognizer(_DOB_RECOGNIZER)
         self._anonymizer = AnonymizerEngine()
 
         self._entities = [
@@ -32,6 +57,7 @@ class Redactor:
             "LOCATION",
             "NRP",
             "MEDICAL_LICENSE",
+            "DATE_OF_BIRTH",
         ]
 
     def redact(self, text: str) -> tuple[str, dict[str, tuple[str, str, str]]]:

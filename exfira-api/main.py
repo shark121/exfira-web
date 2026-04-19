@@ -9,6 +9,7 @@ import os
 
 from redactor import Redactor
 from llm import chat_with_llm
+from compliance_logger import ComplianceLogger
 
 # ── Logging setup ─────────────────────────────────────────────────────────────
 logging.basicConfig(
@@ -19,11 +20,12 @@ logging.basicConfig(
 logger = logging.getLogger("exfira")
 
 redactor: Redactor = None  # type: ignore
+compliance_log: ComplianceLogger = None  # type: ignore
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global redactor
+    global redactor, compliance_log
     logger.info("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
     logger.info("  Exfira API starting up")
     logger.info("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
@@ -31,6 +33,7 @@ async def lifespan(app: FastAPI):
     t0 = time.perf_counter()
     redactor = Redactor()
     logger.info("Presidio + spaCy ready in %.2fs", time.perf_counter() - t0)
+    compliance_log = ComplianceLogger(log_dir=os.getenv("COMPLIANCE_LOG_DIR", "logs"))
     logger.info("Model: %s", os.getenv("LLM_MODEL", "gpt-4o-mini"))
     logger.info("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
     yield
@@ -138,6 +141,26 @@ async def redact_and_chat(req: ChatRequest, request: Request):
         RedactionInfo(entity_type=entity_type, original=original, token=token)
         for token, (_, original, entity_type) in vault.items()
     ]
+
+    # ── Step 4b: Compliance log ────────────────────────────────────────────────
+    event_id = compliance_log.log_event(
+        user_id=request.headers.get("X-User-ID", workspace),
+        session_id=request.headers.get("X-Session-ID", f"sess_{workspace}"),
+        role=request.headers.get("X-Role", "user"),
+        auth_method=request.headers.get("X-Auth-Method", "API Key"),
+        device=request.headers.get("X-Device", "unknown"),
+        client_ip=request.client.host if request.client else "unknown",
+        use_case=request.headers.get("X-Use-Case", "General"),
+        original_text=original_text,
+        redacted_text=redacted_text,
+        raw_llm_response=raw_response,
+        vault=vault,
+        llm_model=model,
+        total_ms=total_ms,
+        detection_ms=detection_ms,
+        llm_ms=llm_ms,
+    )
+    logger.info("   Compliance : logged as %s", event_id)
 
     return ChatResponse(
         response=rehydrated,
