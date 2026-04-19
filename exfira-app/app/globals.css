@@ -1,22 +1,34 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #f9f9f9;
-  --surface-lowest: #ffffff;
-  --surface-low: #f3f3f4;
-  --surface: #eeeeee;
-  --surface-high: #e8e8e8;
-  --surface-highest: #e2e2e2;
-  --on-surface: #1a1c1c;
-  --on-surface-variant: #474747;
-  --secondary: #5e5e5e;
-  --outline: #777777;
-  --outline-variant: #c6c6c6;
-  --primary: #000000;
-  --on-primary: #ffffff;
-  --error: #ba1a1a;
-  --font-headline: "Manrope", sans-serif;
-  --font-body: "Inter", sans-serif;
+  /* Apple-inspired color system */
+  --bg: #F5F5F7;
+  --surface-lowest: #FFFFFF;
+  --surface-low: #F5F5F7;
+  --surface: #E8E8ED;
+  --surface-high: #D1D1D6;
+  --surface-highest: #C7C7CC;
+  --on-surface: #1D1D1F;
+  --on-surface-variant: #3A3A3C;
+  --secondary: #6E6E73;
+  --outline: #8E8E93;
+  --outline-variant: rgba(0,0,0,0.1);
+  --primary: #1D1D1F;
+  --on-primary: #FFFFFF;
+  --error: #FF3B30;
+  --apple-blue: #007AFF;
+  --apple-green: #34C759;
+  --apple-blue-glow: rgba(0,122,255,0.35);
+
+  /* Typography */
+  --font-headline: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Manrope", sans-serif;
+  --font-body: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif;
+
+  /* Shadows */
+  --shadow-sm:  0 1px 2px rgba(0,0,0,0.04), 0 2px 8px rgba(0,0,0,0.04);
+  --shadow-md:  0 2px 4px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06), 0 24px 48px rgba(0,0,0,0.04);
+  --shadow-lg:  0 4px 8px rgba(0,0,0,0.04), 0 16px 40px rgba(0,0,0,0.08), 0 40px 80px rgba(0,0,0,0.06);
+  --shadow-input: 0 0 0 3px rgba(0,122,255,0.15);
 }
 
 * { box-sizing: border-box; }
@@ -30,40 +42,148 @@ html, body {
   font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
-h1, h2, h3, h4, h5, h6 { font-family: var(--font-headline); }
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-headline);
+  letter-spacing: -0.022em;
+}
 
-::selection { background: var(--surface-high); color: var(--primary); }
+::selection {
+  background: rgba(0,122,255,0.18);
+  color: var(--primary);
+}
 
-::-webkit-scrollbar { width: 4px; }
+/* Ultra-thin fading scrollbars */
+::-webkit-scrollbar { width: 3px; height: 3px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--outline-variant); border-radius: 2px; }
+::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.12);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.22); }
 
+/* Ambient glow for auth pages */
 .ambient-orb {
   position: absolute;
-  width: 60vw;
+  width: 70vw;
   height: 60vh;
-  background: radial-gradient(circle, rgba(0,0,0,0.025) 0%, rgba(249,249,249,0) 70%);
-  top: 50%;
+  background: radial-gradient(ellipse at center,
+    rgba(0,122,255,0.04) 0%,
+    rgba(88,86,214,0.02) 40%,
+    transparent 70%
+  );
+  top: 40%;
   left: 50%;
   transform: translate(-50%, -50%);
   z-index: 0;
   pointer-events: none;
 }
 
+/* ── Animations ─────────────────────────────────────── */
 @keyframes fade-up {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(14px) scale(0.99); }
+  to   { opacity: 1; transform: translateY(0)    scale(1); }
 }
 @keyframes fade-in {
   from { opacity: 0; }
   to   { opacity: 1; }
 }
 @keyframes blink {
-  0%, 100% { opacity: 0.25; }
-  50%       { opacity: 0.8; }
+  0%, 100% { opacity: 0.2; transform: scale(0.85); }
+  50%       { opacity: 0.65; transform: scale(1.15); }
+}
+@keyframes slide-up-sheet {
+  from { opacity: 0; transform: translateY(100%); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-.animate-fade-up { animation: fade-up 0.28s cubic-bezier(0.16,1,0.3,1) both; }
-.animate-fade-in { animation: fade-in 0.2s ease both; }
+.animate-fade-up { animation: fade-up 0.38s cubic-bezier(0.25, 0.46, 0.45, 0.94) both; }
+.animate-fade-in { animation: fade-in 0.22s cubic-bezier(0.25, 0.46, 0.45, 0.94) both; }
+
+/* ── Reusable Apple components ───────────────────────── */
+
+/* Frosted vibrancy surface */
+.vibrancy {
+  background: rgba(248,248,248,0.88);
+  backdrop-filter: blur(20px) saturate(1.8);
+  -webkit-backdrop-filter: blur(20px) saturate(1.8);
+}
+
+/* Floating glass card */
+.glass-card {
+  background: rgba(255,255,255,0.75);
+  backdrop-filter: blur(40px) saturate(1.8);
+  -webkit-backdrop-filter: blur(40px) saturate(1.8);
+  border: 1px solid rgba(255,255,255,0.85);
+  border-radius: 20px;
+  box-shadow: var(--shadow-lg);
+}
+
+/* Grouped input card (iOS-style) */
+.input-group {
+  background: rgba(120,120,128,0.08);
+  border: 1px solid rgba(0,0,0,0.07);
+  border-radius: 14px;
+  overflow: hidden;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+.input-group:focus-within {
+  border-color: rgba(0,122,255,0.38);
+  box-shadow: var(--shadow-input);
+}
+.input-group input {
+  display: block;
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 14px 16px;
+  font-size: 16px;
+  font-family: var(--font-body);
+  color: var(--on-surface);
+  letter-spacing: -0.01em;
+  transition: background 0.15s ease;
+}
+.input-group input:focus { background: rgba(255,255,255,0.55); }
+.input-group input::placeholder { color: var(--outline); }
+
+.input-divider {
+  height: 0.5px;
+  background: rgba(0,0,0,0.08);
+  margin: 0 16px;
+}
+
+/* Apple primary CTA */
+.btn-primary {
+  display: block;
+  width: 100%;
+  padding: 14px 20px;
+  background: linear-gradient(180deg, #2e2e30 0%, #1D1D1F 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 590;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  transition: transform 0.18s cubic-bezier(0.25,0.46,0.45,0.94),
+              box-shadow 0.18s cubic-bezier(0.25,0.46,0.45,0.94),
+              background 0.18s ease;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.18), 0 4px 12px rgba(0,0,0,0.1);
+}
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.16), 0 8px 20px rgba(0,0,0,0.12);
+  background: linear-gradient(180deg, #3a3a3c 0%, #2a2a2c 100%);
+}
+.btn-primary:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+.btn-primary:disabled {
+  opacity: 0.32;
+  cursor: not-allowed;
+}

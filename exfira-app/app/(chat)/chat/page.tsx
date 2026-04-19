@@ -17,18 +17,18 @@ type Message = {
 };
 
 const ENTITY_COLORS: Record<string, string> = {
-  PERSON: "#b91c1c",
-  EMAIL_ADDRESS: "#b45309",
-  PHONE_NUMBER: "#15803d",
-  CREDIT_CARD: "#7e22ce",
-  IP_ADDRESS: "#0369a1",
-  LOCATION: "#a16207",
-  URL: "#1d4ed8",
-  US_SSN: "#b91c1c",
-  ORGANIZATION: "#9f1239",
-  NRP: "#6b21a8",
+  PERSON:         "#b91c1c",
+  EMAIL_ADDRESS:  "#b45309",
+  PHONE_NUMBER:   "#15803d",
+  CREDIT_CARD:    "#7e22ce",
+  IP_ADDRESS:     "#0369a1",
+  LOCATION:       "#a16207",
+  URL:            "#1d4ed8",
+  US_SSN:         "#b91c1c",
+  ORGANIZATION:   "#9f1239",
+  NRP:            "#6b21a8",
 };
-function entityColor(t: string) { return ENTITY_COLORS[t] ?? "#5e5e5e"; }
+function entityColor(t: string) { return ENTITY_COLORS[t] ?? "#6E6E73"; }
 
 function HighlightedText({ text, redactions }: { text: string; redactions: Redaction[] }) {
   if (!redactions.length) return <>{text}</>;
@@ -41,8 +41,16 @@ function HighlightedText({ text, redactions }: { text: string; redactions: Redac
         map[seg] ? (
           <span
             key={i}
-            className="rounded px-1 py-0.5 font-mono text-[11px] font-semibold"
-            style={{ background: `${entityColor(map[seg].entity_type)}12`, color: entityColor(map[seg].entity_type), border: `1px solid ${entityColor(map[seg].entity_type)}25` }}
+            style={{
+              borderRadius: 5,
+              padding: "1px 5px",
+              fontFamily: "monospace",
+              fontSize: 11,
+              fontWeight: 600,
+              background: `${entityColor(map[seg].entity_type)}12`,
+              color: entityColor(map[seg].entity_type),
+              border: `1px solid ${entityColor(map[seg].entity_type)}28`,
+            }}
           >
             {seg}
           </span>
@@ -54,99 +62,150 @@ function HighlightedText({ text, redactions }: { text: string; redactions: Redac
   );
 }
 
-function InspectorPanel({ msg, onClose }: { msg: Message; onClose: () => void }) {
+function InspectorPanel({ msg, onClose, isMobile }: { msg: Message; onClose: () => void; isMobile: boolean }) {
+  const panelStyle: React.CSSProperties = isMobile
+    ? {
+        position: "fixed",
+        left: 0, right: 0, bottom: 0,
+        height: "75vh",
+        zIndex: 60,
+        borderRadius: "20px 20px 0 0",
+        borderTop: "0.5px solid rgba(0,0,0,0.1)",
+        borderLeft: "none",
+        display: "flex",
+        flexDirection: "column",
+        background: "rgba(248,248,248,0.97)",
+        backdropFilter: "blur(24px) saturate(1.6)",
+        WebkitBackdropFilter: "blur(24px) saturate(1.6)",
+        animation: "slide-up-sheet 0.32s cubic-bezier(0.25, 0.46, 0.45, 0.94) both",
+      }
+    : {
+        width: 288,
+        flexShrink: 0,
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        background: "rgba(248,248,248,0.92)",
+        backdropFilter: "blur(24px) saturate(1.6)",
+        WebkitBackdropFilter: "blur(24px) saturate(1.6)",
+        borderLeft: "0.5px solid rgba(0,0,0,0.1)",
+        animation: "fade-in 0.22s cubic-bezier(0.25, 0.46, 0.45, 0.94) both",
+      };
+
   return (
-    <aside
-      className="flex-shrink-0 flex flex-col h-full animate-fade-in"
-      style={{
-        width: 300,
-        background: "var(--surface-lowest)",
-        borderLeft: "1px solid var(--outline-variant)",
-      }}
-    >
-      <div
-        className="flex items-center justify-between px-5 h-16 shrink-0"
-        style={{ borderBottom: "1px solid var(--outline-variant)" }}
-      >
-        <span className="text-[11px] font-bold uppercase tracking-[0.12em]" style={{ color: "var(--secondary)", fontFamily: "var(--font-body)" }}>
-          Privacy Details
-        </span>
-        <button
+    <>
+      {isMobile && (
+        <div
+          style={{ position: "fixed", inset: 0, zIndex: 59, background: "rgba(0,0,0,0.25)", backdropFilter: "blur(2px)" }}
           onClick={onClose}
-          className="w-8 h-8 flex items-center justify-center rounded-lg transition-colors hover:bg-[var(--surface)]"
-          style={{ color: "var(--secondary)" }}
-        >
-          <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>close</span>
-        </button>
-      </div>
-
-      <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-5">
-        <div>
-          <p className="text-[10px] font-bold uppercase tracking-[0.14em] mb-2" style={{ color: "var(--outline)" }}>
-            You typed
-          </p>
-          <div
-            className="text-[13px] leading-relaxed rounded-lg p-3"
-            style={{ background: "var(--surface-low)", color: "var(--on-surface)", border: "1px solid var(--outline-variant)" }}
-          >
-            {msg.content}
-          </div>
-        </div>
-
-        <div>
-          <p className="text-[10px] font-bold uppercase tracking-[0.14em] mb-2" style={{ color: "var(--outline)" }}>
-            Sent to LLM
-          </p>
-          <div
-            className="text-[13px] leading-relaxed rounded-lg p-3"
-            style={{ background: "var(--surface-low)", color: "var(--on-surface)", border: "1px solid var(--outline-variant)" }}
-          >
-            {msg.redacted_prompt
-              ? <HighlightedText text={msg.redacted_prompt} redactions={msg.redactions ?? []} />
-              : <span style={{ color: "var(--outline)" }}>No PII found — sent as-is.</span>}
-          </div>
-        </div>
-
-        {(msg.redactions?.length ?? 0) > 0 && (
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.14em] mb-2" style={{ color: "var(--outline)" }}>
-              Redacted ({msg.redactions!.length})
-            </p>
-            <div className="flex flex-col gap-2">
-              {msg.redactions!.map((r, i) => {
-                const color = entityColor(r.entity_type);
-                return (
-                  <div
-                    key={i}
-                    className="rounded-lg p-3 flex items-center justify-between gap-3"
-                    style={{ background: "var(--surface-low)", border: `1px solid ${color}20` }}
-                  >
-                    <div className="flex flex-col gap-0.5 min-w-0">
-                      <span className="text-[9px] font-bold uppercase tracking-wider" style={{ color }}>
-                        {r.entity_type.replace(/_/g, " ")}
-                      </span>
-                      <span className="text-[13px] font-medium truncate" style={{ color: "var(--on-surface)" }}>
-                        {r.original}
-                      </span>
-                    </div>
-                    <span
-                      className="text-[10px] font-mono flex-shrink-0 rounded px-2 py-0.5 font-semibold"
-                      style={{ background: `${color}10`, color, border: `1px solid ${color}20` }}
-                    >
-                      {r.token}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
+        />
+      )}
+      <aside style={panelStyle}>
+        {/* Drag handle on mobile */}
+        {isMobile && (
+          <div style={{ display: "flex", justifyContent: "center", padding: "10px 0 4px" }}>
+            <div style={{ width: 36, height: 4, borderRadius: 2, background: "rgba(0,0,0,0.15)" }} />
           </div>
         )}
 
-        <p className="text-[11px] leading-relaxed" style={{ color: "var(--outline)" }}>
-          The LLM only ever sees tokens. Original values are restored after the response is received.
-        </p>
-      </div>
-    </aside>
+        {/* Header */}
+        <div style={{
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          padding: "0 18px", height: 52, flexShrink: 0,
+          borderBottom: "0.5px solid rgba(0,0,0,0.08)",
+        }}>
+          <span style={{
+            fontSize: 12, fontWeight: 600, letterSpacing: "0.04em",
+            color: "var(--secondary)", textTransform: "uppercase",
+            fontFamily: "var(--font-body)",
+          }}>
+            Privacy Details
+          </span>
+          <button
+            onClick={onClose}
+            style={{
+              width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center",
+              borderRadius: 8, border: "none", background: "rgba(0,0,0,0.05)",
+              cursor: "pointer", color: "var(--secondary)", transition: "background 0.15s ease",
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(0,0,0,0.09)")}
+            onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(0,0,0,0.05)")}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: 16 }}>close</span>
+          </button>
+        </div>
+
+        <div style={{ flex: 1, overflowY: "auto", padding: "18px", display: "flex", flexDirection: "column", gap: 18 }}>
+          <div>
+            <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--outline)", marginBottom: 7 }}>
+              You typed
+            </p>
+            <div style={{
+              fontSize: 13, lineHeight: 1.6, borderRadius: 11, padding: "10px 12px",
+              background: "rgba(120,120,128,0.08)", color: "var(--on-surface)",
+              border: "0.5px solid rgba(0,0,0,0.07)",
+            }}>
+              {msg.content}
+            </div>
+          </div>
+
+          <div>
+            <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--outline)", marginBottom: 7 }}>
+              Sent to LLM
+            </p>
+            <div style={{
+              fontSize: 13, lineHeight: 1.6, borderRadius: 11, padding: "10px 12px",
+              background: "rgba(120,120,128,0.08)", color: "var(--on-surface)",
+              border: "0.5px solid rgba(0,0,0,0.07)",
+            }}>
+              {msg.redacted_prompt
+                ? <HighlightedText text={msg.redacted_prompt} redactions={msg.redactions ?? []} />
+                : <span style={{ color: "var(--outline)" }}>No PII found — sent as-is.</span>}
+            </div>
+          </div>
+
+          {(msg.redactions?.length ?? 0) > 0 && (
+            <div>
+              <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--outline)", marginBottom: 7 }}>
+                Redacted ({msg.redactions!.length})
+              </p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
+                {msg.redactions!.map((r, i) => {
+                  const color = entityColor(r.entity_type);
+                  return (
+                    <div key={i} style={{
+                      borderRadius: 11, padding: "9px 11px",
+                      display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10,
+                      background: "rgba(120,120,128,0.07)", border: `0.5px solid ${color}22`,
+                    }}>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 0 }}>
+                        <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color }}>
+                          {r.entity_type.replace(/_/g, " ")}
+                        </span>
+                        <span style={{ fontSize: 13, fontWeight: 500, color: "var(--on-surface)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {r.original}
+                        </span>
+                      </div>
+                      <span style={{
+                        fontSize: 10, fontFamily: "monospace", flexShrink: 0,
+                        borderRadius: 6, padding: "2px 7px", fontWeight: 600,
+                        background: `${color}10`, color, border: `0.5px solid ${color}22`,
+                      }}>
+                        {r.token}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          <p style={{ fontSize: 11, lineHeight: 1.6, color: "var(--outline)" }}>
+            The LLM only ever sees tokens. Original values are restored after the response is received.
+          </p>
+        </div>
+      </aside>
+    </>
   );
 }
 
@@ -158,10 +217,23 @@ export default function ChatPage() {
   const [copied, setCopied] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const isEmptyState = messages.length === 0;
+
+  // Track mobile breakpoint
+  useEffect(() => {
+    const check = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      if (mobile) setSidebarOpen(false);
+    };
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
 
   useEffect(() => {
     if (!isEmptyState) bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -180,6 +252,8 @@ export default function ChatPage() {
     setInput("");
     setLoading(true);
     if (inputRef.current) inputRef.current.style.height = "auto";
+    // Close inspector and sidebar on mobile when sending
+    if (isMobile) { setInspectedMsg(null); setSidebarOpen(false); }
 
     try {
       const res = await fetch("/api/chat", {
@@ -228,114 +302,158 @@ export default function ChatPage() {
 
   const totalRedacted = messages.reduce((a, m) => a + (m.redactions?.length ?? 0), 0);
 
+  // Sidebar widths
+  const sidebarWidth = sidebarOpen ? 220 : 52;
+
   return (
-    <div className="h-screen flex overflow-hidden" style={{ background: "var(--bg)" }}>
-      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Inter:wght@400;500;600&display=swap" />
+    <div style={{ height: "100vh", display: "flex", overflow: "hidden", background: "var(--bg)" }}>
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" />
       <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" />
 
-      {/* ── Sidebar ───────────────────────────────────────────────── */}
+      {/* ── Mobile sidebar backdrop ───────────────────────── */}
+      {isMobile && sidebarOpen && (
+        <div
+          onClick={() => setSidebarOpen(false)}
+          style={{
+            position: "fixed", inset: 0, zIndex: 40,
+            background: "rgba(0,0,0,0.28)",
+            backdropFilter: "blur(2px)",
+            WebkitBackdropFilter: "blur(2px)",
+          }}
+        />
+      )}
+
+      {/* ── Sidebar ────────────────────────────────────────── */}
       <aside
-        className="h-screen flex flex-col shrink-0 overflow-hidden"
         style={{
-          width: sidebarOpen ? 240 : 56,
-          background: "var(--surface-low)",
-          borderRight: "1px solid var(--outline-variant)",
-          transition: "width 0.22s cubic-bezier(0.4,0,0.2,1)",
+          position: isMobile ? "fixed" : "relative",
+          left: 0, top: 0,
+          zIndex: isMobile ? 50 : "auto",
+          width: isMobile ? 260 : sidebarWidth,
+          height: "100vh",
+          display: "flex",
+          flexDirection: "column",
+          flexShrink: 0,
+          overflow: "hidden",
+          background: "rgba(246,246,246,0.96)",
+          backdropFilter: "blur(20px) saturate(1.6)",
+          WebkitBackdropFilter: "blur(20px) saturate(1.6)",
+          borderRight: "0.5px solid rgba(0,0,0,0.1)",
+          transition: isMobile
+            ? "transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)"
+            : "width 0.26s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+          transform: isMobile
+            ? sidebarOpen ? "translateX(0)" : "translateX(-100%)"
+            : "none",
         }}
       >
-        {/* Header */}
-        <div
-          className="flex items-center h-16 px-3 shrink-0 gap-2"
-          style={{ borderBottom: "1px solid var(--outline-variant)" }}
-        >
-          {sidebarOpen ? (
-            <div className="flex-1 min-w-0">
-              <h1
-                className="text-[18px] font-extrabold uppercase tracking-tight leading-none"
-                style={{ fontFamily: "var(--font-headline)", color: "var(--primary)" }}
-              >
-                EXFIRA
-              </h1>
-              <p className="text-[8px] uppercase tracking-[0.15em] mt-0.5" style={{ color: "var(--secondary)" }}>
+        {/* Sidebar header */}
+        <div style={{
+          display: "flex", alignItems: "center", height: 56, padding: "0 10px",
+          flexShrink: 0, gap: 8,
+          borderBottom: "0.5px solid rgba(0,0,0,0.08)",
+        }}>
+          {(sidebarOpen || isMobile) && (
+            <div style={{ flex: 1, minWidth: 0, paddingLeft: 4 }}>
+              <div style={{
+                fontSize: 15, fontWeight: 700, letterSpacing: "-0.03em",
+                color: "var(--on-surface)", fontFamily: "var(--font-headline)", lineHeight: 1,
+              }}>
+                Exfira
+              </div>
+              <div style={{ fontSize: 9, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--secondary)", marginTop: 2 }}>
                 Private AI
-              </p>
+              </div>
             </div>
-          ) : (
-            <div className="flex-1" />
           )}
+          {!sidebarOpen && !isMobile && <div style={{ flex: 1 }} />}
           <button
             onClick={() => setSidebarOpen((o) => !o)}
-            className="w-8 h-8 flex items-center justify-center rounded-lg transition-colors hover:bg-[var(--surface)]"
-            style={{ color: "var(--secondary)" }}
             title={sidebarOpen ? "Collapse" : "Expand"}
+            style={{
+              width: 30, height: 30, display: "flex", alignItems: "center", justifyContent: "center",
+              borderRadius: 8, border: "none", background: "transparent",
+              cursor: "pointer", color: "var(--outline)", flexShrink: 0,
+              transition: "background 0.15s ease",
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(0,0,0,0.06)")}
+            onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
           >
-            <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>
-              {sidebarOpen ? "left_panel_close" : "left_panel_open"}
+            <span className="material-symbols-outlined" style={{ fontSize: 17 }}>
+              {sidebarOpen || isMobile ? "left_panel_close" : "left_panel_open"}
             </span>
           </button>
         </div>
 
         {/* New Chat */}
-        <div className="px-3 pt-4 pb-2 shrink-0">
+        <div style={{ padding: "10px 10px 6px" }}>
           <button
-            onClick={() => { setMessages([]); setInspectedMsg(null); }}
+            onClick={() => { setMessages([]); setInspectedMsg(null); if (isMobile) setSidebarOpen(false); }}
             title="New Chat"
-            className="w-full flex items-center rounded font-semibold text-xs uppercase tracking-widest transition-all hover:opacity-80 active:scale-95"
             style={{
-              background: "var(--primary)",
-              color: "var(--on-primary)",
-              fontFamily: "var(--font-body)",
-              justifyContent: sidebarOpen ? "space-between" : "center",
-              padding: sidebarOpen ? "10px 14px" : "10px",
+              width: "100%", display: "flex", alignItems: "center", borderRadius: 9, border: "none",
+              fontWeight: 600, fontSize: 12, letterSpacing: "-0.01em",
+              cursor: "pointer", transition: "all 0.18s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+              background: "linear-gradient(180deg, #2e2e30 0%, #1D1D1F 100%)",
+              color: "#ffffff", fontFamily: "var(--font-body)",
+              justifyContent: (sidebarOpen || isMobile) ? "space-between" : "center",
+              padding: (sidebarOpen || isMobile) ? "9px 12px" : "9px",
+              boxShadow: "0 1px 2px rgba(0,0,0,0.15)",
             }}
+            onMouseEnter={(e) => { e.currentTarget.style.opacity = "0.82"; e.currentTarget.style.transform = "translateY(-1px)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.opacity = "1"; e.currentTarget.style.transform = "translateY(0)"; }}
           >
-            {sidebarOpen && <span>New Chat</span>}
-            <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>add</span>
+            {(sidebarOpen || isMobile) && <span>New Chat</span>}
+            <span className="material-symbols-outlined" style={{ fontSize: 16 }}>add</span>
           </button>
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 overflow-y-auto px-3 pt-2 flex flex-col gap-0.5">
+        <nav style={{ flex: 1, overflowY: "auto", padding: "4px 10px", display: "flex", flexDirection: "column", gap: 2 }}>
           {!isEmptyState && (
             <button
               title="Current Chat"
-              className="w-full flex items-center gap-3 rounded-lg text-[13px] font-semibold transition-all"
+              onClick={() => { if (isMobile) setSidebarOpen(false); }}
               style={{
-                background: "var(--surface-lowest)",
-                color: "var(--primary)",
-                padding: sidebarOpen ? "10px 12px" : "10px",
-                justifyContent: sidebarOpen ? "flex-start" : "center",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+                width: "100%", display: "flex", alignItems: "center", gap: 10,
+                borderRadius: 8, border: "none",
+                fontSize: 13, fontWeight: 500, letterSpacing: "-0.01em",
+                cursor: "pointer", transition: "background 0.15s ease",
+                background: "rgba(255,255,255,0.75)", color: "var(--on-surface)",
+                padding: (sidebarOpen || isMobile) ? "8px 10px" : "8px",
+                justifyContent: (sidebarOpen || isMobile) ? "flex-start" : "center",
+                boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
               }}
             >
-              <span className="material-symbols-outlined shrink-0" style={{ fontSize: "18px", fontVariationSettings: "'FILL' 1" }}>
+              <span className="material-symbols-outlined" style={{ fontSize: 17, flexShrink: 0, fontVariationSettings: "'FILL' 1", color: "var(--apple-blue)" }}>
                 chat_bubble
               </span>
-              {sidebarOpen && <span className="truncate">Current Chat</span>}
+              {(sidebarOpen || isMobile) && <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>Current Chat</span>}
             </button>
           )}
         </nav>
 
         {/* Footer */}
-        <div className="px-3 pb-4 shrink-0 flex flex-col gap-1" style={{ borderTop: "1px solid var(--outline-variant)" }}>
-          <div className="pt-3" />
-
-          {/* Privacy counter */}
+        <div style={{
+          padding: "10px 10px 12px", flexShrink: 0,
+          borderTop: "0.5px solid rgba(0,0,0,0.08)",
+          display: "flex", flexDirection: "column", gap: 4,
+        }}>
           {totalRedacted > 0 && (
             <div
-              className="flex items-center rounded-lg overflow-hidden mb-1"
-              style={{
-                background: `rgba(185,28,28,0.06)`,
-                border: "1px solid rgba(185,28,28,0.15)",
-                padding: sidebarOpen ? "7px 10px" : "7px",
-                justifyContent: sidebarOpen ? "flex-start" : "center",
-                gap: sidebarOpen ? 8 : 0,
-              }}
               title={`${totalRedacted} items protected`}
+              style={{
+                display: "flex", alignItems: "center",
+                borderRadius: 8, overflow: "hidden",
+                background: "rgba(52,199,89,0.1)", border: "0.5px solid rgba(52,199,89,0.25)",
+                padding: (sidebarOpen || isMobile) ? "6px 10px" : "6px",
+                justifyContent: (sidebarOpen || isMobile) ? "flex-start" : "center",
+                gap: (sidebarOpen || isMobile) ? 7 : 0,
+              }}
             >
-              <span className="material-symbols-outlined shrink-0" style={{ fontSize: "16px", color: "#b91c1c" }}>shield</span>
-              {sidebarOpen && (
-                <span className="text-[11px] font-medium" style={{ color: "#b91c1c" }}>
+              <span className="material-symbols-outlined" style={{ fontSize: 14, color: "var(--apple-green)", flexShrink: 0, fontVariationSettings: "'FILL' 1" }}>shield</span>
+              {(sidebarOpen || isMobile) && (
+                <span style={{ fontSize: 11, fontWeight: 500, color: "var(--apple-green)", letterSpacing: "-0.01em" }}>
                   {totalRedacted} protected
                 </span>
               )}
@@ -343,72 +461,125 @@ export default function ChatPage() {
           )}
 
           <div
-            className="flex items-center rounded-lg cursor-pointer transition-colors hover:bg-[var(--surface)]"
-            style={{
-              padding: sidebarOpen ? "7px 10px" : "7px",
-              justifyContent: sidebarOpen ? "flex-start" : "center",
-              gap: sidebarOpen ? 10 : 0,
-            }}
             title="Administrator"
+            style={{
+              display: "flex", alignItems: "center", borderRadius: 8, cursor: "pointer",
+              padding: (sidebarOpen || isMobile) ? "6px 8px" : "6px",
+              justifyContent: (sidebarOpen || isMobile) ? "flex-start" : "center",
+              gap: (sidebarOpen || isMobile) ? 9 : 0,
+              transition: "background 0.15s ease",
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(0,0,0,0.05)")}
+            onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
           >
-            <div
-              className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0"
-              style={{ background: "var(--surface-high)", color: "var(--on-surface)", border: "1px solid var(--outline-variant)" }}
-            >
+            <div style={{
+              width: 28, height: 28, borderRadius: "50%", flexShrink: 0,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 11, fontWeight: 700, background: "rgba(0,0,0,0.08)", color: "var(--on-surface)",
+            }}>
               A
             </div>
-            {sidebarOpen && (
-              <div className="flex-1 min-w-0">
-                <p className="text-[13px] font-semibold truncate leading-none" style={{ color: "var(--primary)" }}>Administrator</p>
-                <p className="text-[10px] truncate mt-0.5" style={{ color: "var(--secondary)" }}>admin@exfira.io</p>
+            {(sidebarOpen || isMobile) && (
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ fontSize: 13, fontWeight: 500, color: "var(--on-surface)", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", letterSpacing: "-0.01em" }}>Administrator</p>
+                <p style={{ fontSize: 10, color: "var(--secondary)", margin: "1px 0 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>admin@exfira.io</p>
               </div>
             )}
           </div>
         </div>
       </aside>
 
-      {/* ── Main ──────────────────────────────────────────────────── */}
-      <main className="flex-1 flex flex-col h-full relative overflow-hidden" style={{ background: "var(--bg)" }}>
+      {/* ── Main ────────────────────────────────────────────── */}
+      <main style={{ flex: 1, display: "flex", flexDirection: "column", height: "100%", position: "relative", overflow: "hidden", background: "var(--bg)", minWidth: 0 }}>
 
         {/* Topbar */}
-        <header
-          className="flex justify-end items-center px-6 h-16 shrink-0 sticky top-0 z-20"
-          style={{ background: "rgba(249,249,249,0.85)", backdropFilter: "blur(20px)", borderBottom: "1px solid var(--outline-variant)" }}
-        >
-          <div className="relative">
+        <header style={{
+          display: "flex", alignItems: "center",
+          padding: "0 16px", height: 56, flexShrink: 0,
+          position: "sticky", top: 0, zIndex: 20,
+          background: "rgba(245,245,247,0.82)",
+          backdropFilter: "blur(20px) saturate(1.8)",
+          WebkitBackdropFilter: "blur(20px) saturate(1.8)",
+          borderBottom: "0.5px solid rgba(0,0,0,0.08)",
+        }}>
+          {/* Mobile: hamburger on left */}
+          {isMobile && (
+            <button
+              onClick={() => setSidebarOpen(true)}
+              style={{
+                width: 34, height: 34, borderRadius: 9, border: "none",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                background: "transparent", cursor: "pointer", color: "var(--on-surface)",
+                marginRight: 8, transition: "background 0.15s ease",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(0,0,0,0.06)")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: 20 }}>menu</span>
+            </button>
+          )}
+
+          {/* Mobile: centered wordmark */}
+          {isMobile && (
+            <div style={{ flex: 1, textAlign: "center" }}>
+              <span style={{ fontSize: 15, fontWeight: 700, letterSpacing: "-0.03em", color: "var(--on-surface)", fontFamily: "var(--font-headline)" }}>
+                Exfira
+              </span>
+            </div>
+          )}
+
+          {!isMobile && <div style={{ flex: 1 }} />}
+
+          {/* User avatar */}
+          <div style={{ position: "relative" }}>
             <button
               onClick={() => setUserMenuOpen((o) => !o)}
-              className="w-9 h-9 flex items-center justify-center rounded-full font-bold text-[13px] transition-colors hover:bg-[var(--surface)]"
-              style={{ background: "var(--surface-high)", color: "var(--primary)", border: "1px solid var(--outline-variant)" }}
               title="Account"
+              style={{
+                width: 32, height: 32, borderRadius: "50%",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: 12, fontWeight: 700, border: "none", cursor: "pointer",
+                background: "rgba(0,0,0,0.07)", color: "var(--on-surface)",
+                transition: "background 0.15s ease",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(0,0,0,0.12)")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(0,0,0,0.07)")}
             >
               A
             </button>
 
             {userMenuOpen && (
               <>
-                {/* Backdrop */}
-                <div className="fixed inset-0 z-30" onClick={() => setUserMenuOpen(false)} />
-                {/* Dropdown */}
+                <div style={{ position: "fixed", inset: 0, zIndex: 30 }} onClick={() => setUserMenuOpen(false)} />
                 <div
-                  className="absolute right-0 top-11 z-40 w-56 rounded-xl py-1 animate-fade-up"
+                  className="animate-fade-up"
                   style={{
-                    background: "var(--surface-lowest)",
-                    border: "1px solid var(--outline-variant)",
-                    boxShadow: "0 8px 30px rgba(0,0,0,0.08)",
+                    position: "absolute", right: 0, top: 40, zIndex: 40, width: 220,
+                    borderRadius: 14, paddingTop: 4, paddingBottom: 4,
+                    background: "rgba(255,255,255,0.88)",
+                    backdropFilter: "blur(30px) saturate(1.8)",
+                    WebkitBackdropFilter: "blur(30px) saturate(1.8)",
+                    border: "0.5px solid rgba(0,0,0,0.1)",
+                    boxShadow: "0 4px 8px rgba(0,0,0,0.04), 0 16px 40px rgba(0,0,0,0.1)",
                   }}
                 >
-                  <div className="px-4 py-3" style={{ borderBottom: "1px solid var(--outline-variant)" }}>
-                    <p className="text-[13px] font-semibold" style={{ color: "var(--primary)" }}>Administrator</p>
-                    <p className="text-[11px] mt-0.5" style={{ color: "var(--secondary)" }}>admin@exfira.io</p>
+                  <div style={{ padding: "10px 14px", borderBottom: "0.5px solid rgba(0,0,0,0.07)" }}>
+                    <p style={{ fontSize: 13, fontWeight: 600, color: "var(--on-surface)", margin: 0, letterSpacing: "-0.02em" }}>Administrator</p>
+                    <p style={{ fontSize: 11, color: "var(--secondary)", margin: "2px 0 0" }}>admin@exfira.io</p>
                   </div>
                   <a
                     href="/login"
-                    className="flex items-center gap-2.5 px-4 py-2.5 text-[13px] transition-colors hover:bg-[var(--surface-low)]"
-                    style={{ color: "var(--error)" }}
+                    style={{
+                      display: "flex", alignItems: "center", gap: 9,
+                      padding: "9px 14px", fontSize: 13, letterSpacing: "-0.01em",
+                      color: "var(--error)", textDecoration: "none",
+                      transition: "background 0.15s ease", borderRadius: "0 0 14px 14px",
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,59,48,0.06)")}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
                     onClick={() => setUserMenuOpen(false)}
                   >
-                    <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>logout</span>
+                    <span className="material-symbols-outlined" style={{ fontSize: 15 }}>logout</span>
                     Sign out
                   </a>
                 </div>
@@ -417,114 +588,156 @@ export default function ChatPage() {
           </div>
         </header>
 
-        {/* Ambient orb */}
-        <div className="ambient-orb" />
+        {/* Ambient gradient */}
+        <div style={{
+          position: "absolute", width: "60vw", height: "50vh",
+          background: "radial-gradient(ellipse at center, rgba(0,122,255,0.025) 0%, transparent 70%)",
+          top: "40%", left: "50%", transform: "translate(-50%, -50%)",
+          zIndex: 0, pointerEvents: "none",
+        }} />
 
         {isEmptyState ? (
           /* ── Empty / home state ── */
-          <div className="flex-1 relative z-10 flex flex-col">
-            <div className="flex-1 flex flex-col items-center justify-end pb-8 px-6">
-              <div className="w-full max-w-2xl text-center mb-10">
-                <h2
-                  className="text-[2.75rem] leading-none font-bold tracking-tight mb-3"
-                  style={{ fontFamily: "var(--font-headline)", color: "var(--primary)" }}
-                >
-                  Hello, where do we start today?
+          <div style={{ flex: 1, position: "relative", zIndex: 10, display: "flex", flexDirection: "column" }}>
+            <div style={{
+              flex: 1, display: "flex", flexDirection: "column",
+              alignItems: "center", justifyContent: "flex-end",
+              paddingBottom: 28, padding: "0 16px 28px",
+            }}>
+              <div style={{ width: "100%", maxWidth: 620, textAlign: "center", marginBottom: 24 }}>
+                <h2 style={{
+                  fontSize: "clamp(26px, 6vw, 40px)",
+                  lineHeight: 1.1, fontWeight: 700,
+                  letterSpacing: "-0.04em", marginBottom: 10,
+                  color: "var(--on-surface)", fontFamily: "var(--font-headline)",
+                }}>
+                  Hello, where do<br />we start today?
                 </h2>
-                <p className="text-base" style={{ color: "var(--secondary)" }}>
+                <p style={{ fontSize: "clamp(13px, 2.5vw, 15px)", color: "var(--secondary)", lineHeight: 1.5, letterSpacing: "-0.01em" }}>
                   Your data is redacted before it reaches any model.
                 </p>
               </div>
 
-              <div className="w-full max-w-2xl relative">
-                <textarea
-                  ref={inputRef}
-                  rows={1}
-                  value={input}
-                  onChange={(e) => { setInput(e.target.value); autoResize(e.target); }}
-                  onKeyDown={handleKeyDown}
-                  placeholder="Ask Exfira anything…"
-                  className="w-full resize-none outline-none text-[15px] leading-relaxed"
-                  style={{
-                    background: "var(--surface-lowest)",
-                    color: "var(--on-surface)",
-                    border: "1px solid var(--outline-variant)",
-                    borderRadius: "0.75rem",
-                    padding: "18px 52px 18px 20px",
-                    boxShadow: "0 4px 24px rgba(0,0,0,0.05)",
-                    fontFamily: "var(--font-body)",
-                  }}
-                />
-                <div className="absolute inset-y-0 right-3 flex items-center">
-                  <button
-                    onClick={() => sendMessage()}
-                    disabled={!input.trim() || loading}
-                    className="w-9 h-9 flex items-center justify-center rounded-lg transition-all disabled:opacity-25 hover:opacity-80"
-                    style={{ background: "var(--primary)" }}
-                  >
-                    <span className="material-symbols-outlined" style={{ fontSize: "18px", color: "#fff" }}>arrow_upward</span>
-                  </button>
+              <div style={{ width: "100%", maxWidth: 620, position: "relative" }}>
+                <div style={{
+                  background: "rgba(255,255,255,0.82)",
+                  backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
+                  border: "0.5px solid rgba(0,0,0,0.1)", borderRadius: 18,
+                  boxShadow: "0 2px 4px rgba(0,0,0,0.04), 0 8px 32px rgba(0,0,0,0.07)",
+                  overflow: "hidden",
+                }}>
+                  <textarea
+                    ref={inputRef}
+                    rows={1}
+                    value={input}
+                    onChange={(e) => { setInput(e.target.value); autoResize(e.target); }}
+                    onKeyDown={handleKeyDown}
+                    placeholder="Ask Exfira anything…"
+                    style={{
+                      width: "100%", resize: "none", outline: "none",
+                      background: "transparent", border: "none",
+                      fontSize: 15, lineHeight: 1.55, letterSpacing: "-0.01em",
+                      color: "var(--on-surface)", fontFamily: "var(--font-body)",
+                      padding: "16px 52px 16px 18px",
+                    }}
+                  />
+                  <div style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)" }}>
+                    <button
+                      onClick={() => sendMessage()}
+                      disabled={!input.trim() || loading}
+                      style={{
+                        width: 34, height: 34, borderRadius: 10, border: "none",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        background: "linear-gradient(180deg, #2e2e30 0%, #1D1D1F 100%)",
+                        cursor: "pointer",
+                        transition: "all 0.18s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+                        opacity: !input.trim() || loading ? 0.28 : 1,
+                        boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
+                      }}
+                    >
+                      <span className="material-symbols-outlined" style={{ fontSize: 17, color: "#fff" }}>arrow_upward</span>
+                    </button>
+                  </div>
                 </div>
               </div>
 
-              <p className="text-[10px] uppercase tracking-widest font-bold mt-3" style={{ color: "var(--outline-variant)", fontFamily: "var(--font-body)" }}>
+              <p style={{
+                fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em",
+                fontWeight: 500, marginTop: 12,
+                color: "rgba(0,0,0,0.22)", fontFamily: "var(--font-body)",
+                textAlign: "center",
+              }}>
                 Exfira redacts PII before any data leaves this device
               </p>
             </div>
           </div>
         ) : (
           /* ── Chat state ── */
-          <div className="flex-1 overflow-y-auto pb-36 pt-6 z-10 relative">
-            <div className="max-w-2xl mx-auto px-4 md:px-6 flex flex-col gap-8 w-full">
+          <div style={{ flex: 1, overflowY: "auto", paddingBottom: 140, paddingTop: 20, position: "relative", zIndex: 10 }}>
+            <div style={{ maxWidth: 640, margin: "0 auto", padding: "0 16px", display: "flex", flexDirection: "column", gap: 24 }}>
               {messages.map((msg) =>
                 msg.role === "user" ? (
-                  <div key={msg.id} className="flex flex-col items-end w-full animate-fade-up">
-                    <div
-                      className="px-5 py-3.5 rounded-xl rounded-tr-sm max-w-[82%] text-[14px] leading-relaxed"
-                      style={{
-                        background: "var(--surface-highest)",
-                        color: "var(--on-surface)",
-                        border: inspectedMsg?.id === msg.id ? "1px solid rgba(185,28,28,0.3)" : "1px solid transparent",
-                      }}
-                    >
+                  <div key={msg.id} className="animate-fade-up" style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
+                    <div style={{
+                      padding: "11px 16px",
+                      borderRadius: 18, borderTopRightRadius: 5,
+                      maxWidth: "85%",
+                      fontSize: 14, lineHeight: 1.6, letterSpacing: "-0.01em",
+                      background: "#F2F2F7", color: "var(--on-surface)",
+                      border: inspectedMsg?.id === msg.id ? "1px solid rgba(52,199,89,0.3)" : "1px solid transparent",
+                      wordBreak: "break-word",
+                    }}>
                       {msg.content}
                     </div>
-                    <div className="mt-1.5 flex items-center gap-2 pr-1">
+                    <div style={{ marginTop: 5, display: "flex", alignItems: "center", gap: 8, paddingRight: 4 }}>
                       {msg.redactions !== undefined ? (
                         msg.redactions.length > 0 ? (
                           <button
                             onClick={() => handleInspect(msg)}
-                            className="flex items-center gap-1.5 text-[11px] font-medium transition-opacity hover:opacity-70"
-                            style={{ color: inspectedMsg?.id === msg.id ? "#b91c1c" : "var(--outline)" }}
+                            style={{
+                              display: "flex", alignItems: "center", gap: 5,
+                              fontSize: 11, fontWeight: 500, border: "none",
+                              background: "transparent", cursor: "pointer",
+                              color: inspectedMsg?.id === msg.id ? "var(--apple-green)" : "var(--outline)",
+                              letterSpacing: "-0.01em", transition: "color 0.15s ease", padding: 0,
+                            }}
                           >
-                            <span className="material-symbols-outlined" style={{ fontSize: "12px" }}>shield</span>
+                            <span className="material-symbols-outlined" style={{ fontSize: 12, fontVariationSettings: "'FILL' 1" }}>shield</span>
                             {msg.redactions.length} item{msg.redactions.length !== 1 ? "s" : ""} protected — inspect
                           </button>
                         ) : (
-                          <span className="text-[11px]" style={{ color: "var(--outline-variant)" }}>No PII detected</span>
+                          <span style={{ fontSize: 11, color: "var(--surface-high)", letterSpacing: "-0.01em" }}>No PII detected</span>
                         )
                       ) : null}
                     </div>
                   </div>
                 ) : (
-                  <div key={msg.id} className="flex items-start gap-3 w-full animate-fade-up">
-                    <div
-                      className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5"
-                      style={{ background: "var(--primary)" }}
-                    >
-                      <span className="material-symbols-outlined" style={{ fontSize: "15px", color: "#fff" }}>auto_awesome</span>
+                  <div key={msg.id} className="animate-fade-up" style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+                    <div style={{
+                      width: 28, height: 28, borderRadius: "50%", flexShrink: 0, marginTop: 2,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      background: "linear-gradient(145deg, #2e2e30, #1D1D1F)",
+                      boxShadow: "0 1px 4px rgba(0,0,0,0.15)",
+                    }}>
+                      <span className="material-symbols-outlined" style={{ fontSize: 13, color: "#fff", fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
                     </div>
-                    <div className="flex-1 min-w-0 space-y-3 pt-1">
-                      <p className="text-[14px] leading-relaxed" style={{ color: "var(--on-surface)" }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontSize: 14, lineHeight: 1.7, color: "var(--on-surface)", margin: "0 0 7px", letterSpacing: "-0.01em", wordBreak: "break-word" }}>
                         {msg.content}
                       </p>
                       <button
                         title="Copy"
                         onClick={() => copyMessage(msg.id, msg.content)}
-                        className="flex items-center gap-1 text-[11px] transition-opacity hover:opacity-70"
-                        style={{ color: "var(--outline)" }}
+                        style={{
+                          display: "flex", alignItems: "center", gap: 5,
+                          fontSize: 11, fontWeight: 500, letterSpacing: "-0.01em",
+                          color: "var(--outline)", border: "none", background: "transparent",
+                          cursor: "pointer", padding: 0, transition: "color 0.15s ease",
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.color = "var(--on-surface)")}
+                        onMouseLeave={(e) => (e.currentTarget.style.color = "var(--outline)")}
                       >
-                        <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>
+                        <span className="material-symbols-outlined" style={{ fontSize: 13 }}>
                           {copied === msg.id ? "check" : "content_copy"}
                         </span>
                         {copied === msg.id ? "Copied" : "Copy"}
@@ -535,24 +748,26 @@ export default function ChatPage() {
               )}
 
               {loading && (
-                <div className="flex items-start gap-3 animate-fade-up">
-                  <div
-                    className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
-                    style={{ background: "var(--primary)" }}
-                  >
-                    <span className="material-symbols-outlined" style={{ fontSize: "15px", color: "#fff" }}>auto_awesome</span>
+                <div className="animate-fade-up" style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+                  <div style={{
+                    width: 28, height: 28, borderRadius: "50%", flexShrink: 0,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    background: "linear-gradient(145deg, #2e2e30, #1D1D1F)",
+                    boxShadow: "0 1px 4px rgba(0,0,0,0.15)",
+                  }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: 13, color: "#fff", fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
                   </div>
-                  <div
-                    className="px-4 py-3 rounded-xl"
-                    style={{ background: "var(--surface-lowest)", border: "1px solid var(--outline-variant)" }}
-                  >
-                    <div className="flex gap-1 items-center h-4">
+                  <div style={{
+                    padding: "11px 14px", borderRadius: 14, marginTop: 2,
+                    background: "rgba(255,255,255,0.8)", border: "0.5px solid rgba(0,0,0,0.08)",
+                  }}>
+                    <div style={{ display: "flex", gap: 5, alignItems: "center", height: 14 }}>
                       {[0, 1, 2].map((i) => (
-                        <span
-                          key={i}
-                          className="w-1.5 h-1.5 rounded-full"
-                          style={{ background: "var(--outline)", animation: `blink 1.2s ${i * 0.2}s ease-in-out infinite` }}
-                        />
+                        <span key={i} style={{
+                          width: 6, height: 6, borderRadius: "50%",
+                          background: "var(--apple-blue)", display: "block",
+                          animation: `blink 1.1s ${i * 0.18}s ease-in-out infinite`,
+                        }} />
                       ))}
                     </div>
                   </div>
@@ -563,21 +778,21 @@ export default function ChatPage() {
           </div>
         )}
 
-        {/* ── Floating input (chat mode) ─────────────────────────── */}
+        {/* ── Floating input (chat mode) ─────────────────── */}
         {!isEmptyState && (
-          <div
-            className="absolute bottom-0 left-0 w-full z-30 px-4 md:px-6 pb-5 pt-10"
-            style={{ background: "linear-gradient(to top, var(--bg) 65%, transparent)" }}
-          >
-            <div className="max-w-2xl mx-auto w-full">
-              <div
-                className="relative flex flex-col rounded-xl"
-                style={{
-                  background: "var(--surface-lowest)",
-                  border: "1px solid var(--outline-variant)",
-                  boxShadow: "0 4px 24px rgba(0,0,0,0.06)",
-                }}
-              >
+          <div style={{
+            position: "absolute", bottom: 0, left: 0, width: "100%",
+            zIndex: 30, padding: "0 16px 20px",
+            background: "linear-gradient(to top, var(--bg) 60%, transparent)",
+          }}>
+            <div style={{ maxWidth: 640, margin: "0 auto" }}>
+              <div style={{
+                position: "relative", display: "flex", flexDirection: "column",
+                background: "rgba(255,255,255,0.82)",
+                backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
+                border: "0.5px solid rgba(0,0,0,0.1)", borderRadius: 18,
+                boxShadow: "0 2px 4px rgba(0,0,0,0.04), 0 8px 32px rgba(0,0,0,0.07)",
+              }}>
                 <textarea
                   ref={inputRef}
                   rows={1}
@@ -585,24 +800,40 @@ export default function ChatPage() {
                   onChange={(e) => { setInput(e.target.value); autoResize(e.target); }}
                   onKeyDown={handleKeyDown}
                   placeholder="Message Exfira…"
-                  className="w-full bg-transparent text-[14px] resize-none outline-none border-none py-4 px-5 min-h-[52px] max-h-[200px]"
-                  style={{ color: "var(--on-surface)", fontFamily: "var(--font-body)" }}
+                  style={{
+                    width: "100%", background: "transparent", border: "none",
+                    fontSize: 15, resize: "none", outline: "none",
+                    padding: "14px 52px 14px 18px",
+                    minHeight: 50, maxHeight: 200,
+                    color: "var(--on-surface)", fontFamily: "var(--font-body)",
+                    letterSpacing: "-0.01em", lineHeight: 1.55,
+                  }}
                 />
-                <div className="flex items-center justify-end px-3 pb-3">
+                <div style={{ display: "flex", justifyContent: "flex-end", padding: "0 10px 10px" }}>
                   <button
                     onClick={() => sendMessage()}
                     disabled={!input.trim() || loading}
-                    className="w-9 h-9 flex items-center justify-center rounded-lg transition-all disabled:opacity-25 hover:opacity-80"
-                    style={{ background: "var(--primary)" }}
+                    style={{
+                      width: 34, height: 34, borderRadius: 10, border: "none",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      background: "linear-gradient(180deg, #2e2e30 0%, #1D1D1F 100%)",
+                      cursor: "pointer",
+                      transition: "all 0.18s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+                      opacity: !input.trim() || loading ? 0.28 : 1,
+                      boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
+                    }}
+                    onMouseEnter={(e) => { if (input.trim() && !loading) e.currentTarget.style.transform = "scale(1.06)"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
                   >
-                    <span className="material-symbols-outlined" style={{ fontSize: "18px", color: "#fff" }}>arrow_upward</span>
+                    <span className="material-symbols-outlined" style={{ fontSize: 17, color: "#fff" }}>arrow_upward</span>
                   </button>
                 </div>
               </div>
-              <p
-                className="text-center mt-2 text-[10px] uppercase tracking-widest font-bold"
-                style={{ color: "var(--outline-variant)", fontFamily: "var(--font-body)" }}
-              >
+              <p style={{
+                textAlign: "center", marginTop: 7,
+                fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em",
+                fontWeight: 500, color: "rgba(0,0,0,0.22)", fontFamily: "var(--font-body)",
+              }}>
                 Exfira redacts PII before any data leaves this device
               </p>
             </div>
@@ -610,9 +841,13 @@ export default function ChatPage() {
         )}
       </main>
 
-      {/* ── Inspector panel ─────────────────────────────────────── */}
+      {/* ── Inspector panel ───────────────────────────────── */}
       {inspectedMsg && (
-        <InspectorPanel msg={inspectedMsg} onClose={() => setInspectedMsg(null)} />
+        <InspectorPanel
+          msg={inspectedMsg}
+          onClose={() => setInspectedMsg(null)}
+          isMobile={isMobile}
+        />
       )}
     </div>
   );

@@ -27,6 +27,7 @@ export default function SignupPage() {
   if (done) {
     return (
       <div className="min-h-screen flex items-center justify-center px-4" style={{ background: "var(--bg)" }}>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" />
         <div className="text-center animate-fade-up">
           <div
             className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4"
@@ -49,7 +50,7 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4" style={{ background: "var(--bg)" }}>
+    <div className="min-h-screen flex items-center justify-center px-4 py-10" style={{ background: "var(--bg)" }}>
       <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Inter:wght@400;500;600&display=swap" />
       <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" />
 
