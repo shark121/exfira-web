@@ -66,6 +66,7 @@ class RedactionInfo(BaseModel):
 class ChatResponse(BaseModel):
     response: str
     redacted_prompt: str
+    raw_llm_response: str
     redactions: list[RedactionInfo]
 
 
@@ -141,6 +142,7 @@ async def redact_and_chat(req: ChatRequest, request: Request):
     return ChatResponse(
         response=rehydrated,
         redacted_prompt=redacted_text,
+        raw_llm_response=raw_response,
         redactions=redactions,
     )
 

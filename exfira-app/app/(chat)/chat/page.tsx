@@ -14,6 +14,7 @@ type Message = {
   content: string;
   redactions?: Redaction[];
   redacted_prompt?: string;
+  raw_llm_response?: string;
 };
 
 const ENTITY_COLORS: Record<string, string> = {
@@ -150,17 +151,24 @@ function InspectorPanel({ msg, onClose, isMobile }: { msg: Message; onClose: () 
           </div>
 
           <div>
-            <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--outline)", marginBottom: 7 }}>
-              Sent to LLM
-            </p>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 7 }}>
+              <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--outline)", margin: 0 }}>
+                Sent to LLM
+              </p>
+              {(msg.redactions?.length ?? 0) === 0 && (
+                <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", color: "#15803d", background: "#15803d12", border: "0.5px solid #15803d28", borderRadius: 5, padding: "1px 6px" }}>
+                  no pii — sent as-is
+                </span>
+              )}
+            </div>
             <div style={{
               fontSize: 13, lineHeight: 1.6, borderRadius: 11, padding: "10px 12px",
               background: "rgba(120,120,128,0.08)", color: "var(--on-surface)",
-              border: "0.5px solid rgba(0,0,0,0.07)",
+              border: "0.5px solid rgba(0,0,0,0.07)", whiteSpace: "pre-wrap", wordBreak: "break-word",
             }}>
               {msg.redacted_prompt
                 ? <HighlightedText text={msg.redacted_prompt} redactions={msg.redactions ?? []} />
-                : <span style={{ color: "var(--outline)" }}>No PII found — sent as-is.</span>}
+                : <span style={{ color: "var(--outline)" }}>{msg.content}</span>}
             </div>
           </div>
 
@@ -200,8 +208,28 @@ function InspectorPanel({ msg, onClose, isMobile }: { msg: Message; onClose: () 
             </div>
           )}
 
+          <div>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 7 }}>
+              <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--outline)", margin: 0 }}>
+                LLM replied (raw)
+              </p>
+              <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", color: "#0369a1", background: "#0369a112", border: "0.5px solid #0369a128", borderRadius: 5, padding: "1px 6px" }}>
+                before de-anonymisation
+              </span>
+            </div>
+            <div style={{
+              fontSize: 13, lineHeight: 1.6, borderRadius: 11, padding: "10px 12px",
+              background: "rgba(120,120,128,0.08)", color: "var(--on-surface)",
+              border: "0.5px solid rgba(0,0,0,0.07)", whiteSpace: "pre-wrap", wordBreak: "break-word",
+            }}>
+              {msg.raw_llm_response
+                ? <HighlightedText text={msg.raw_llm_response} redactions={msg.redactions ?? []} />
+                : <span style={{ color: "var(--outline)" }}>Waiting for response…</span>}
+            </div>
+          </div>
+
           <p style={{ fontSize: 11, lineHeight: 1.6, color: "var(--outline)" }}>
-            The LLM only ever sees tokens. Original values are restored after the response is received.
+            Tokens in the LLM reply are swapped back to real values before being shown to you.
           </p>
         </div>
       </aside>
@@ -268,7 +296,7 @@ export default function ChatPage() {
       setMessages((prev) =>
         prev.map((m) =>
           m.id === userMsg.id
-            ? { ...m, redactions: data.redactions ?? [], redacted_prompt: data.redacted_prompt ?? m.content }
+            ? { ...m, redactions: data.redactions ?? [], redacted_prompt: data.redacted_prompt ?? m.content, raw_llm_response: data.raw_llm_response ?? "" }
             : m
         )
       );
