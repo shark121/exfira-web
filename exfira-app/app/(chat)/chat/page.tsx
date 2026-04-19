@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { useSession } from "next-auth/react";
 
 type Redaction = {
   entity_type: string;
@@ -17,6 +18,12 @@ type Message = {
   raw_llm_response?: string;
 };
 
+type Conversation = {
+  id: string;
+  title: string;
+  updated_at: string;
+};
+
 const ENTITY_COLORS: Record<string, string> = {
   PERSON:         "#b91c1c",
   EMAIL_ADDRESS:  "#b45309",
@@ -28,6 +35,7 @@ const ENTITY_COLORS: Record<string, string> = {
   US_SSN:         "#b91c1c",
   ORGANIZATION:   "#9f1239",
   NRP:            "#6b21a8",
+  DATE_OF_BIRTH:  "#c2410c",
 };
 function entityColor(t: string) { return ENTITY_COLORS[t] ?? "#6E6E73"; }
 
@@ -244,6 +252,9 @@ function InspectorPanel({ msg, onClose, isMobile }: { msg: Message; onClose: () 
 }
 
 export default function ChatPage() {
+  const { data: session } = useSession();
+  const user = session?.user as { id?: string; name?: string; email?: string } | undefined;
+
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -252,6 +263,9 @@ export default function ChatPage() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [conversationId, setConversationId] = useState<string | null>(null);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -268,6 +282,46 @@ export default function ChatPage() {
     window.addEventListener("resize", check);
     return () => window.removeEventListener("resize", check);
   }, []);
+
+  const loadConversations = useCallback(async () => {
+    setHistoryLoading(true);
+    try {
+      const res = await fetch("/api/conversations");
+      if (res.ok) setConversations(await res.json());
+    } finally {
+      setHistoryLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { loadConversations(); }, [loadConversations]);
+
+  async function loadConversation(id: string) {
+    const res = await fetch(`/api/conversations/${id}`);
+    if (!res.ok) return;
+    const data = await res.json();
+    const loaded: Message[] = (data.messages ?? []).map((m: {
+      id: string; role: string; content: string;
+      redacted_prompt?: string; raw_llm_response?: string; redactions?: Redaction[];
+    }) => ({
+      id: m.id,
+      role: m.role as "user" | "assistant",
+      content: m.content,
+      redacted_prompt: m.redacted_prompt ?? undefined,
+      raw_llm_response: m.raw_llm_response ?? undefined,
+      redactions: m.redactions ?? undefined,
+    }));
+    setMessages(loaded);
+    setConversationId(id);
+    setInspectedMsg(null);
+    if (isMobile) setSidebarOpen(false);
+  }
+
+  function startNewChat() {
+    setMessages([]);
+    setConversationId(null);
+    setInspectedMsg(null);
+    if (isMobile) setSidebarOpen(false);
+  }
 
   useEffect(() => {
     if (!isEmptyState) bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -295,10 +349,14 @@ export default function ChatPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           messages: [...messages, userMsg].map((m) => ({ role: m.role, content: m.content })),
+          conversation_id: conversationId,
         }),
       });
       if (!res.ok) throw new Error("API error");
       const data = await res.json();
+
+      if (data.conversation_id) setConversationId(data.conversation_id);
+
       setMessages((prev) =>
         prev.map((m) =>
           m.id === userMsg.id
@@ -310,6 +368,7 @@ export default function ChatPage() {
         ...prev,
         { id: Date.now().toString() + "_a", role: "assistant", content: data.response ?? "No response." },
       ]);
+      loadConversations();
     } catch {
       setMessages((prev) => [
         ...prev,
@@ -422,7 +481,7 @@ export default function ChatPage() {
         {/* New Chat */}
         <div style={{ padding: "10px 10px 6px" }}>
           <button
-            onClick={() => { setMessages([]); setInspectedMsg(null); if (isMobile) setSidebarOpen(false); }}
+            onClick={startNewChat}
             title="New Chat"
             style={{
               width: "100%", display: "flex", alignItems: "center", borderRadius: 9, border: "none",
@@ -442,29 +501,74 @@ export default function ChatPage() {
           </button>
         </div>
 
-        {/* Nav */}
+        {/* Compliance link */}
+        <div style={{ padding: "2px 10px 6px" }}>
+          <a
+            href="/compliance"
+            title="Compliance Logs"
+            style={{
+              width: "100%", display: "flex", alignItems: "center", gap: 10,
+              borderRadius: 8, border: "none", textDecoration: "none",
+              fontSize: 12, fontWeight: 500, letterSpacing: "-0.01em",
+              cursor: "pointer", transition: "background 0.15s ease",
+              background: "transparent", color: "var(--secondary)",
+              padding: (sidebarOpen || isMobile) ? "7px 10px" : "8px",
+              justifyContent: (sidebarOpen || isMobile) ? "flex-start" : "center",
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(0,0,0,0.05)")}
+            onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: 15, flexShrink: 0, color: "#0369a1", fontVariationSettings: "'FILL' 1" }}>policy</span>
+            {(sidebarOpen || isMobile) && <span>Compliance Logs</span>}
+          </a>
+        </div>
+
+        {/* Nav — conversation history */}
         <nav style={{ flex: 1, overflowY: "auto", padding: "4px 10px", display: "flex", flexDirection: "column", gap: 2 }}>
-          {!isEmptyState && (
-            <button
-              title="Current Chat"
-              onClick={() => { if (isMobile) setSidebarOpen(false); }}
-              style={{
-                width: "100%", display: "flex", alignItems: "center", gap: 10,
-                borderRadius: 8, border: "none",
-                fontSize: 13, fontWeight: 500, letterSpacing: "-0.01em",
-                cursor: "pointer", transition: "background 0.15s ease",
-                background: "rgba(255,255,255,0.75)", color: "var(--on-surface)",
-                padding: (sidebarOpen || isMobile) ? "8px 10px" : "8px",
-                justifyContent: (sidebarOpen || isMobile) ? "flex-start" : "center",
-                boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
-              }}
-            >
-              <span className="material-symbols-outlined" style={{ fontSize: 17, flexShrink: 0, fontVariationSettings: "'FILL' 1", color: "var(--apple-blue)" }}>
-                chat_bubble
-              </span>
-              {(sidebarOpen || isMobile) && <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>Current Chat</span>}
-            </button>
+          {(sidebarOpen || isMobile) && conversations.length > 0 && (
+            <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--outline)", margin: "6px 2px 4px", paddingLeft: 2 }}>
+              Recent
+            </p>
           )}
+          {historyLoading && (sidebarOpen || isMobile) && (
+            <p style={{ fontSize: 11, color: "var(--outline)", padding: "6px 2px" }}>Loading…</p>
+          )}
+          {conversations.map((conv) => {
+            const isActive = conv.id === conversationId;
+            const date = new Date(conv.updated_at);
+            const dateStr = date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+            return (
+              <button
+                key={conv.id}
+                title={conv.title}
+                onClick={() => loadConversation(conv.id)}
+                style={{
+                  width: "100%", display: "flex", alignItems: "center", gap: 10,
+                  borderRadius: 8, border: "none",
+                  fontSize: 12, fontWeight: isActive ? 600 : 500, letterSpacing: "-0.01em",
+                  cursor: "pointer", transition: "background 0.15s ease",
+                  background: isActive ? "rgba(255,255,255,0.85)" : "transparent",
+                  color: isActive ? "var(--on-surface)" : "var(--secondary)",
+                  padding: (sidebarOpen || isMobile) ? "7px 10px" : "8px",
+                  justifyContent: (sidebarOpen || isMobile) ? "flex-start" : "center",
+                  boxShadow: isActive ? "0 1px 4px rgba(0,0,0,0.05)" : "none",
+                  textAlign: "left",
+                }}
+                onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.background = "rgba(0,0,0,0.04)"; }}
+                onMouseLeave={(e) => { if (!isActive) e.currentTarget.style.background = "transparent"; }}
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: 15, flexShrink: 0, fontVariationSettings: isActive ? "'FILL' 1" : "'FILL' 0", color: isActive ? "var(--apple-blue)" : "var(--outline)" }}>
+                  chat_bubble
+                </span>
+                {(sidebarOpen || isMobile) && (
+                  <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{conv.title}</span>
+                )}
+                {(sidebarOpen || isMobile) && (
+                  <span style={{ fontSize: 9, color: "var(--outline)", flexShrink: 0 }}>{dateStr}</span>
+                )}
+              </button>
+            );
+          })}
         </nav>
 
         {/* Footer */}
@@ -495,7 +599,7 @@ export default function ChatPage() {
           )}
 
           <div
-            title="Administrator"
+            title={user?.name ?? "User"}
             style={{
               display: "flex", alignItems: "center", borderRadius: 8, cursor: "pointer",
               padding: (sidebarOpen || isMobile) ? "6px 8px" : "6px",
@@ -511,12 +615,12 @@ export default function ChatPage() {
               display: "flex", alignItems: "center", justifyContent: "center",
               fontSize: 11, fontWeight: 700, background: "rgba(0,0,0,0.08)", color: "var(--on-surface)",
             }}>
-              A
+              {(user?.name ?? user?.email ?? "?")[0].toUpperCase()}
             </div>
             {(sidebarOpen || isMobile) && (
               <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ fontSize: 13, fontWeight: 500, color: "var(--on-surface)", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", letterSpacing: "-0.01em" }}>Administrator</p>
-                <p style={{ fontSize: 10, color: "var(--secondary)", margin: "1px 0 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>admin@exfira.io</p>
+                <p style={{ fontSize: 13, fontWeight: 500, color: "var(--on-surface)", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", letterSpacing: "-0.01em" }}>{user?.name ?? "User"}</p>
+                <p style={{ fontSize: 10, color: "var(--secondary)", margin: "1px 0 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user?.email ?? ""}</p>
               </div>
             )}
           </div>
@@ -579,7 +683,7 @@ export default function ChatPage() {
               onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(0,0,0,0.12)")}
               onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(0,0,0,0.07)")}
             >
-              A
+              {(user?.name ?? user?.email ?? "?")[0].toUpperCase()}
             </button>
 
             {userMenuOpen && (
@@ -598,8 +702,8 @@ export default function ChatPage() {
                   }}
                 >
                   <div style={{ padding: "10px 14px", borderBottom: "0.5px solid rgba(0,0,0,0.07)" }}>
-                    <p style={{ fontSize: 13, fontWeight: 600, color: "var(--on-surface)", margin: 0, letterSpacing: "-0.02em" }}>Administrator</p>
-                    <p style={{ fontSize: 11, color: "var(--secondary)", margin: "2px 0 0" }}>admin@exfira.io</p>
+                    <p style={{ fontSize: 13, fontWeight: 600, color: "var(--on-surface)", margin: 0, letterSpacing: "-0.02em" }}>{user?.name ?? "User"}</p>
+                    <p style={{ fontSize: 11, color: "var(--secondary)", margin: "2px 0 0" }}>{user?.email ?? ""}</p>
                   </div>
                   <a
                     href="/login"
