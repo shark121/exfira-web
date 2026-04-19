@@ -107,7 +107,7 @@ import logging
 logger = logging.getLogger("exfira")
 
 OLLAMA_URL = "http://localhost:11434/api/chat"
-GEMMA_MODEL = "gemma4"  # model tag as installed in Ollama
+GEMMA_MODEL = "gemma4:e2b"  # model tag as installed in Ollama
 
 SYSTEM_PROMPT = """You are a PII detection engine. Your only job is to find personally
 identifiable information in text.
@@ -236,8 +236,7 @@ redacted_text, vault = redactor.redact(original_text, detected)
 curl -fsSL https://ollama.com/install.sh | sh
 
 # Pull Gemma 4 (choose the variant that fits RAM)
-ollama pull gemma4         # full model
-ollama pull gemma4:2b      # if RAM is tight
+ollama pull gemma4:e2b     # E2B — recommended (fits L4/T4, ~5 GB VRAM at 4-bit)
 
 # Verify
 ollama run gemma4 "Return []"
@@ -251,11 +250,10 @@ Ollama runs as a systemd service on `localhost:11434`. It is not exposed to the 
 |---|---|---|
 | spaCy `en_core_web_lg` | ~1.5 GB | — |
 | Presidio Analyzer/Anonymizer | ~300 MB | — |
-| Ollama + Gemma 4 (2B) | — | ~1.5–2 GB |
-| Ollama + Gemma 4 (full) | — | ~5–6 GB |
+| Ollama + Gemma 4 E2B (4-bit) | — | ~5 GB VRAM |
 | FastAPI process | ~200 MB | ~200 MB |
 
-The 2B variant is a safe fit. The full model is tight on CX32 but workable if nothing else is running. Upgrade to CX42 (16 GB, $16.90/month) to run the full model comfortably.
+E2B at 4-bit quantization needs ~5 GB of VRAM. A `g2-standard-4` on GCP (NVIDIA L4, 24 GB VRAM) is the target machine — it fits E2B with significant headroom and can be upgraded to E4B or 26B-A4B without changing instance type.
 
 ---
 

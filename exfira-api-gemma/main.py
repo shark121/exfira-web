@@ -31,7 +31,7 @@ async def lifespan(app: FastAPI):
     detector = GemmaDetector()
     redactor = Redactor()
     logger.info("Detector : Gemma 4 via Ollama @ %s", os.getenv("OLLAMA_URL", "http://localhost:11434"))
-    logger.info("Model    : %s", os.getenv("GEMMA_MODEL", "gemma4:2b"))
+    logger.info("Model    : %s", os.getenv("GEMMA_MODEL", "gemma4:e2b"))
     logger.info("LLM      : %s", os.getenv("LLM_MODEL", "gpt-4o-mini"))
     logger.info("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
     yield

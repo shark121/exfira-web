@@ -7,7 +7,7 @@ import httpx
 logger = logging.getLogger("exfira")
 
 OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434/api/chat")
-GEMMA_MODEL = os.getenv("GEMMA_MODEL", "gemma4:2b")
+GEMMA_MODEL = os.getenv("GEMMA_MODEL", "gemma4:e2b")
 
 SYSTEM_PROMPT = (
     "You are a PII detection engine. Your only job is to find personally identifiable "
