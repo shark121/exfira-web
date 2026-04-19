@@ -7,6 +7,8 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
+    console.log(body);
+
     const res = await fetch(`${PYTHON_SERVICE_URL}/redact-and-chat`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -18,9 +20,10 @@ export async function POST(req: NextRequest) {
 
     if (!res.ok) {
       const text = await res.text();
+
       return NextResponse.json(
         { error: `Python service error: ${text}` },
-        { status: 502 }
+        { status: 502 },
       );
     }
 
@@ -30,7 +33,7 @@ export async function POST(req: NextRequest) {
     console.error("[/api/chat]", err);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

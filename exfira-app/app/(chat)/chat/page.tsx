@@ -31,34 +31,49 @@ const ENTITY_COLORS: Record<string, string> = {
 };
 function entityColor(t: string) { return ENTITY_COLORS[t] ?? "#6E6E73"; }
 
-function HighlightedText({ text, redactions }: { text: string; redactions: Redaction[] }) {
+function HighlightedText({ text, redactions, showOriginal = false }: { text: string; redactions: Redaction[]; showOriginal?: boolean }) {
   if (!redactions.length) return <>{text}</>;
   const map = Object.fromEntries(redactions.map((r) => [r.token, r]));
-  const pat = redactions.map((r) => r.token.replace(/[<>]/g, (c) => `\\${c}`)).join("|");
+  const escapedTokens = redactions.map((r) =>
+    r.token.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+  );
+  const pat = escapedTokens.join("|");
   if (!pat) return <>{text}</>;
   return (
     <>
-      {text.split(new RegExp(`(${pat})`, "g")).map((seg, i) =>
-        map[seg] ? (
+      {text.split(new RegExp(`(${pat})`, "g")).map((seg, i) => {
+        const r = map[seg];
+        if (!r) return <span key={i}>{seg}</span>;
+        const color = entityColor(r.entity_type);
+        return (
           <span
             key={i}
             style={{
-              borderRadius: 5,
-              padding: "1px 5px",
-              fontFamily: "monospace",
-              fontSize: 11,
-              fontWeight: 600,
-              background: `${entityColor(map[seg].entity_type)}12`,
-              color: entityColor(map[seg].entity_type),
-              border: `1px solid ${entityColor(map[seg].entity_type)}28`,
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 3,
+              verticalAlign: "middle",
+              borderRadius: 6,
+              padding: "1px 6px 1px 5px",
+              background: `${color}10`,
+              border: `1px solid ${color}30`,
+              margin: "0 1px",
             }}
           >
-            {seg}
+            {showOriginal && (
+              <span style={{ fontSize: 12, color: `${color}99`, textDecoration: "line-through", fontWeight: 400 }}>
+                {r.original}
+              </span>
+            )}
+            {showOriginal && (
+              <span style={{ fontSize: 10, color: `${color}80`, fontWeight: 500 }}>→</span>
+            )}
+            <span style={{ fontFamily: "monospace", fontSize: 12, fontWeight: 700, color, letterSpacing: "0.01em" }}>
+              {seg}
+            </span>
           </span>
-        ) : (
-          <span key={i}>{seg}</span>
-        )
-      )}
+        );
+      })}
     </>
   );
 }
@@ -167,7 +182,7 @@ function InspectorPanel({ msg, onClose, isMobile }: { msg: Message; onClose: () 
               border: "0.5px solid rgba(0,0,0,0.07)", whiteSpace: "pre-wrap", wordBreak: "break-word",
             }}>
               {msg.redacted_prompt
-                ? <HighlightedText text={msg.redacted_prompt} redactions={msg.redactions ?? []} />
+                ? <HighlightedText text={msg.redacted_prompt} redactions={msg.redactions ?? []} showOriginal={true} />
                 : <span style={{ color: "var(--outline)" }}>{msg.content}</span>}
             </div>
           </div>
