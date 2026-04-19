@@ -13,10 +13,21 @@ export default function SignupPage() {
     e.preventDefault();
     setError("");
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 800));
-    // TODO: wire to /api/auth/register
+
+    const res = await fetch("/api/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(form),
+    });
+
+    const data = await res.json();
     setLoading(false);
-    setDone(true);
+
+    if (!res.ok) {
+      setError(data.error ?? "Something went wrong.");
+    } else {
+      setDone(true);
+    }
   }
 
   if (done) {

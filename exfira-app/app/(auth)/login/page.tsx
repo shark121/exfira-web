@@ -1,9 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 export default function LoginPage() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -14,16 +17,23 @@ export default function LoginPage() {
     setError("");
     setLoading(true);
 
-    await new Promise((r) => setTimeout(r, 800));
+    const result = await signIn("credentials", {
+      email,
+      password,
+      redirect: false,
+    });
 
-    // TODO: wire to NextAuth signIn
     setLoading(false);
-    setError("Authentication not yet configured.");
+
+    if (result?.error) {
+      setError("Invalid email or password.");
+    } else {
+      router.push("/chat");
+    }
   }
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4" style={{ background: "var(--bg)" }}>
-      {/* Background grid */}
       <div
         className="fixed inset-0 pointer-events-none opacity-[0.03]"
         style={{
@@ -34,13 +44,9 @@ export default function LoginPage() {
       />
 
       <div className="w-full max-w-sm relative z-10">
-        {/* Logo */}
         <div className="mb-8 flex flex-col items-center">
           <a href="/" className="flex items-center gap-2 mb-6">
-            <span
-              className="text-xl font-bold tracking-tight"
-              style={{ color: "var(--text)" }}
-            >
+            <span className="text-xl font-bold tracking-tight" style={{ color: "var(--text)" }}>
               exfira
             </span>
             <span
@@ -62,13 +68,9 @@ export default function LoginPage() {
           </p>
         </div>
 
-        {/* Card */}
         <div
           className="rounded-xl p-6"
-          style={{
-            background: "var(--surface)",
-            border: "1px solid var(--border)",
-          }}
+          style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
         >
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
@@ -87,12 +89,8 @@ export default function LoginPage() {
                   border: "1px solid var(--border)",
                   color: "var(--text)",
                 }}
-                onFocus={(e) =>
-                  (e.target.style.borderColor = "rgba(255,69,58,0.5)")
-                }
-                onBlur={(e) =>
-                  (e.target.style.borderColor = "var(--border)")
-                }
+                onFocus={(e) => (e.target.style.borderColor = "rgba(255,69,58,0.5)")}
+                onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
               />
             </div>
 
@@ -101,11 +99,7 @@ export default function LoginPage() {
                 <label className="text-sm font-medium" style={{ color: "var(--text-muted)" }}>
                   Password
                 </label>
-                <a
-                  href="#"
-                  className="text-xs hover:underline"
-                  style={{ color: "var(--red)" }}
-                >
+                <a href="#" className="text-xs hover:underline" style={{ color: "var(--red)" }}>
                   Forgot password?
                 </a>
               </div>
@@ -121,12 +115,8 @@ export default function LoginPage() {
                   border: "1px solid var(--border)",
                   color: "var(--text)",
                 }}
-                onFocus={(e) =>
-                  (e.target.style.borderColor = "rgba(255,69,58,0.5)")
-                }
-                onBlur={(e) =>
-                  (e.target.style.borderColor = "var(--border)")
-                }
+                onFocus={(e) => (e.target.style.borderColor = "rgba(255,69,58,0.5)")}
+                onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
               />
             </div>
 
@@ -147,10 +137,7 @@ export default function LoginPage() {
               type="submit"
               disabled={loading}
               className="w-full rounded-lg py-2.5 text-sm font-semibold transition-opacity disabled:opacity-60"
-              style={{
-                background: "var(--red)",
-                color: "#fff",
-              }}
+              style={{ background: "var(--red)", color: "#fff" }}
             >
               {loading ? "Signing in…" : "Sign in"}
             </button>
@@ -159,11 +146,7 @@ export default function LoginPage() {
 
         <p className="text-center text-sm mt-4" style={{ color: "var(--text-muted)" }}>
           Don&apos;t have an account?{" "}
-          <Link
-            href="/signup"
-            className="font-medium hover:underline"
-            style={{ color: "var(--text)" }}
-          >
+          <Link href="/signup" className="font-medium hover:underline" style={{ color: "var(--text)" }}>
             Sign up
           </Link>
         </p>
