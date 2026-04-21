@@ -9,7 +9,11 @@ export async function POST(req: NextRequest) {
     const session = await auth();
     const body = await req.json();
 
-    const userId = (session?.user as { id?: string })?.id ?? "anonymous";
+    const userId = (session?.user as { id?: string })?.id;
+    if (!userId) {
+      console.warn("[/api/chat] no session user — conversations will not be saved");
+    }
+    const effectiveUserId = userId ?? "anonymous";
     const userEmail = session?.user?.email ?? "";
     const conversationId: string | null = body.conversation_id ?? null;
     const clientIp =
@@ -23,8 +27,8 @@ export async function POST(req: NextRequest) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "X-User-ID": userId,
-        "X-Session-ID": conversationId ?? `sess_${userId}_${Date.now()}`,
+        "X-User-ID": effectiveUserId,
+        "X-Session-ID": conversationId ?? `sess_${effectiveUserId}_${Date.now()}`,
         "X-Role": "user",
         "X-Auth-Method": "NextAuth / Credentials",
         "X-Device": userAgent.slice(0, 200),
@@ -33,7 +37,7 @@ export async function POST(req: NextRequest) {
       },
       body: JSON.stringify({
         messages: body.messages,
-        workspace_id: userId,
+        workspace_id: effectiveUserId,
       }),
     });
 
@@ -55,7 +59,7 @@ export async function POST(req: NextRequest) {
           : userContent;
       const { data: conv } = await supabase
         .from("conversations")
-        .insert({ user_id: userId, title })
+        .insert({ user_id: effectiveUserId, title })
         .select("id")
         .single();
       activeConvId = conv?.id ?? null;
@@ -97,7 +101,7 @@ export async function POST(req: NextRequest) {
 
       await supabase.from("compliance_events").insert({
         conversation_id: activeConvId,
-        user_id: userId,
+        user_id: effectiveUserId,
         user_email: userEmail,
         client_ip: clientIp,
         pii_detected: piiDetected,
@@ -107,7 +111,7 @@ export async function POST(req: NextRequest) {
         llm_model: process.env.LLM_MODEL ?? "gpt-4o-mini",
         use_case: body.use_case ?? "General",
         full_record: {
-          user_id: userId,
+          user_id: effectiveUserId,
           conversation_id: activeConvId,
           redactions: data.redactions ?? [],
           redacted_prompt: data.redacted_prompt,

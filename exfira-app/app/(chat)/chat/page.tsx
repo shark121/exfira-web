@@ -252,7 +252,7 @@ function InspectorPanel({ msg, onClose, isMobile }: { msg: Message; onClose: () 
 }
 
 export default function ChatPage() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const user = session?.user as { id?: string; name?: string; email?: string } | undefined;
 
   const [messages, setMessages] = useState<Message[]>([]);
@@ -287,13 +287,22 @@ export default function ChatPage() {
     setHistoryLoading(true);
     try {
       const res = await fetch("/api/conversations");
-      if (res.ok) setConversations(await res.json());
+      if (res.ok) {
+        setConversations(await res.json());
+      } else {
+        console.warn("[conversations] fetch failed", res.status, await res.text());
+      }
+    } catch (e) {
+      console.error("[conversations] fetch error", e);
     } finally {
       setHistoryLoading(false);
     }
   }, []);
 
-  useEffect(() => { loadConversations(); }, [loadConversations]);
+  // Only load once the session is confirmed — avoids a 401 race on first render
+  useEffect(() => {
+    if (status === "authenticated") loadConversations();
+  }, [status, loadConversations]);
 
   async function loadConversation(id: string) {
     const res = await fetch(`/api/conversations/${id}`);
